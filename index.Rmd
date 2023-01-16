@@ -1,0 +1,124 @@
+---
+title: "TAMPA BAY BENTHIC DASHBOARD"
+output: 
+  flexdashboard::flex_dashboard:
+    logo: www/tarponlogo.png
+    social: menu
+    source_code: "https://github.com/tbep-tech/benthic-dash"
+runtime: shiny
+css: styles.css
+---
+
+```{r setup, include=F}
+knitr::opts_chunk$set(echo = F, message = F, warning = F)
+
+library(flexdashboard)
+library(tbeptools)
+library(mapview)
+
+source('R/funcs.R')
+
+cols <- c('#CC3231', '#E9C318', '#2DC938')
+
+fml <- 'Lato Light'
+
+load(file = 'data/tbbiscr.RData')
+```
+
+```{r reactives}
+
+```
+
+```{r map}
+
+```
+
+```{r downloadhandlers}
+```
+
+OVERVIEW
+===========================================================
+
+Column {.tabset .tabset-fade data-width=650}
+-----------------------------------------------------------------------
+
+### USING THE DASHBOARD
+
+<div class = "row">
+<div class = "col-md-2"></div>
+<div class = "col-md-8">
+
+#### WELCOME TO THE TAMPA BAY BENTHIC DASHBOARD!
+
+The plots in this dashboard are interactive and display options can be controlled using a mouse. Most plots include a [control menu](https://help.plot.ly/zoom-pan-hover-controls/) on the top with different options for viewing the data.  For example, click the camera icon to download a png file for a plot.
+
+<br>
+```{r, fig.align='center', out.width='30%'}
+knitr::include_graphics('www/plotcontrols.PNG')
+```
+<br>
+
+#### Website information
+
+Text
+
+</div>
+<div class = "col-md-2"></div>
+</div>
+
+### METHODS
+
+<div class = "row">
+<div class = "col-md-2"></div>
+<div class = "col-md-8">
+
+#### How to understand and use the benthic data
+
+</div>
+<div class = "col-md-2"></div>
+</div>
+
+### DOWNLOAD DATA
+
+1 TAMPA BAY BENTHIC INDEX
+===========================================================
+
+Column {.tabset .tabset-fade data-width=275}
+-----------------------------------------------------------------------
+
+### MATRIX RESULTS
+
+```{r}
+```
+
+### Using this tab
+
+This tab shows the overall assessment of the TBBI as management action categories:
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### RESULTS BY YEAR
+
+```{r}
+
+```
+
+2 OVERALL SEDIMENT CONTAMINANTS
+===========================================================
+
+Column {.tabset .tabset-fade data-width=275}
+-----------------------------------------------------------------------
+
+### MAP SELECTION
+
+### Using this tab
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### GAUGES
+
+```{r}
+
+```
