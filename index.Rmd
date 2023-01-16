@@ -15,6 +15,10 @@ knitr::opts_chunk$set(echo = F, message = F, warning = F)
 library(flexdashboard)
 library(tbeptools)
 library(mapview)
+library(dplyr)
+library(leaflet)
+library(sf)
+library(plotly)
 
 source('R/funcs.R')
 
@@ -22,11 +26,104 @@ cols <- c('#CC3231', '#E9C318', '#2DC938')
 
 fml <- 'Lato Light'
 
+maxyr <- 2021
+
 load(file = 'data/tbbiscr.RData')
+load(file = 'data/segs.RData')
+
+# base matrix
+tbbimat <- show_tbbimatrix(tbbiscr, family = fml, txtsz = NULL) 
+
+bbx <- sf::st_bbox(segs) %>%
+    as.numeric()
 ```
 
 ```{r reactives}
+# benthic matrix
+benmat <- reactive({
+  
+  # input
+  yrsel1 <- input$yrsel1
 
+  lwid <- 1.5
+  
+  # base matrix with selected year
+  p <- tbbimat +
+    geom_hline(yintercept = yrsel1 - 0.5, lwd = lwid) + 
+    geom_hline(yintercept = yrsel1 + 0.5, lwd = lwid) + 
+    geom_segment(aes(x = 0.5, xend = 0.5, y = yrsel1 - 0.5, yend = yrsel1 + 0.5, lwd = lwid)) +
+    geom_segment(aes(x = 9.5, xend = 9.5, y = yrsel1 - 0.5, yend = yrsel1 + 0.5, lwd = lwid))
+  
+  out <- show_matrixplotly(p, tooltip = 'Action')
+  
+  return(out)
+
+})
+
+# benthic index map
+benmap <- reactive({
+  
+  # inputs
+  yrsel1 <- input$yrsel1
+
+  # site scores
+  toplo <- tbbiscr %>% 
+    filter(yr %in% yrsel1) %>% 
+    filter(ProgramName %in% c('Benthic Monitoring')) %>% 
+    filter(TBBICat != 'Empty Sample') %>% 
+    filter(AreaAbbr %in% c("HB", "OTB", "MTB", "LTB", "TCB", "MR", "BCB")) %>% 
+    mutate(
+      outcome = case_when(
+        TBBICat == 'Healthy' ~ '#2DC938', 
+        TBBICat == 'Intermediate' ~ '#E9C318', 
+        TBBICat == 'Degraded' ~ '#CC3231'
+      )
+    ) %>% 
+    st_as_sf(coords = c('Longitude', 'Latitude'), crs = 4326)
+  
+  # segment averages
+  benyr <- tbbiscr %>% 
+    filter(yr == yrsel1) %>% 
+    anlz_tbbimed(bay_segment = c("HB", "OTB", "MTB", "LTB", "TCB", "MR", "BCB")) %>% 
+    mutate(
+      outcome = case_when(
+        TBBICat == 'Good' ~ '#2DC938', 
+        TBBICat == 'Fair' ~ '#E9C318', 
+        TBBICat == 'Poor' ~ '#CC3231'
+      )
+    ) %>% 
+    left_join(segs, ., by = 'bay_segment')
+
+  # map with custom legends
+  mapview::mapView(map.types = mapview::mapviewGetOption("basemaps")) %>%
+    .@map %>% 
+    leafem::removeMouseCoordinates() %>%
+    addPolygons(
+      data = benyr, 
+      stroke = T, 
+      color = 'grey', 
+      weight = 1, 
+      layerId = ~bay_segment, 
+      fillColor = ~outcome, 
+      fillOpacity = 0.3,
+      label = ~paste0(bay_segment, ': ', long_name, ', TBBI: ', TBBICat)
+    ) %>% 
+    addCircleMarkers(
+      data = toplo, 
+      layerId = ~StationID,
+      stroke = TRUE,
+      color = 'black',
+      fill = TRUE,
+      fillColor = ~outcome,
+      weight = 1,
+      fillOpacity = 1,
+      radius= 4,#~scales::rescale(val, from = scls, to = c(5, 20)),
+      label = ~paste0('Site ', StationID, ', TBBI: ', round(TBBI, 1), ', Category: ', TBBICat)
+    ) %>% 
+    addLegend("topright", labels = c("Good", "Fair", "Poor"), colors = rev(cols), title = "TBBI Category", opacity = 1) %>% 
+    fitBounds(lng1 = bbx[1], lng2 = bbx[3], lat1 = bbx[2], lat2 = bbx[4])
+  
+})
 ```
 
 ```{r map}
@@ -89,6 +186,8 @@ Column {.tabset .tabset-fade data-width=275}
 ### MATRIX RESULTS
 
 ```{r}
+output$benmat <- renderPlotly(benmat())
+plotlyOutput('benmat')
 ```
 
 ### Using this tab
@@ -101,7 +200,15 @@ Column {data-width=500}
 ### RESULTS BY YEAR
 
 ```{r}
-
+output$benmap <- renderLeaflet({benmap()})
+fillCol(flex = c(NA, 1),
+  column(12,
+    column(6,
+      sliderInput('yrsel1', 'Select year:', min = 1993, max = maxyr, value = maxyr, step = 1, sep = '', width = '200%', animate = T),
+    )
+  ),
+  leafletOutput('benmap')
+)
 ```
 
 2 OVERALL SEDIMENT CONTAMINANTS
