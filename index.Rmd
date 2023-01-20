@@ -36,6 +36,12 @@ tbbimat <- show_tbbimatrix(tbbiscr, family = fml, txtsz = NULL)
 
 bbx <- sf::st_bbox(segs) %>%
     as.numeric()
+
+# parameter lookup 
+prmlkup <- sedimentdata %>% 
+  select(SedResultsType, Parameter) %>% 
+  unique() %>% 
+  arrange(SedResultsType, Parameter)
 ```
 
 ```{r reactives}
@@ -122,6 +128,61 @@ benmap <- reactive({
     ) %>% 
     addLegend("topright", labels = c("Good", "Fair", "Poor"), colors = rev(cols), title = "TBBI Category", opacity = 1) %>% 
     fitBounds(lng1 = bbx[1], lng2 = bbx[3], lat1 = bbx[2], lat2 = bbx[4])
+  
+})
+
+# sediment plot
+sedplo <- reactive({
+  
+  # inputs
+  typsel <- input$typsel
+  prmsel <- input$prmsel
+  yrsel2 <- input$yrsel2
+  
+  if(typsel == 'PEL summary'){
+    
+    out <- show_sedimentpelave(sedimentdata, yrrng = yrsel2, plotly = T)
+    
+  }
+  
+  if(typsel != 'PEL summary'){
+    
+    req(prmsel)
+    
+    out <- show_sedimentave(sedimentdata, param = prmsel, yrrng = yrsel2)
+    
+  }
+  
+  return(out)
+  
+})
+
+# sediment map
+sedmap <- reactive({
+  
+  # inputs
+  typsel <- input$typsel
+  prmsel <- input$prmsel
+  yrsel2 <- input$yrsel2
+
+  if(typsel == 'PEL summary'){
+    
+    out <- show_sedimentpelmap(sedimentdata, yrrng = yrsel2)
+    
+  }
+  
+  if(typsel != 'PEL summary'){
+    
+    req(prmsel)
+    
+    out <- try(show_sedimentmap(sedimentdata, param = prmsel, yrrng = yrsel2), silent = TRUE)
+    validate(
+      need(inherits(out, 'leaflet'), paste('No TEL/PEL data for', prmsel))
+    )
+    
+  }
+  
+  return(out)
   
 })
 ```
@@ -217,15 +278,46 @@ fillCol(flex = c(NA, 1),
 Column {.tabset .tabset-fade data-width=275}
 -----------------------------------------------------------------------
 
-### MAP SELECTION
+### SUMMARY RESULTS
+
+```{r}
+output$sedplo <- renderPlotly(sedplo())
+plotlyOutput('sedplo')
+```
 
 ### Using this tab
 
 Column {data-width=500}
 -----------------------------------------------------------------------
 
-### GAUGES
+### RESULTS FOR YEAR SELECTION
 
 ```{r}
-
+output$sedmap <- renderLeaflet({sedmap()})
+fillCol(flex = c(NA, 1),
+  column(12,
+    column(3, 
+      selectInput('typsel', 'Select type:', choices = c('PEL summary', 'Organics', 'Metals', 'Physical', 'Other'))
+    ),
+    column(3, 
+      renderUI({
+        typsel <- input$typsel
+        
+        req(typsel)
+        req(typsel != 'PEL summary')
+        
+        tosel <- prmlkup %>% 
+          filter(SedResultsType == typsel) %>% 
+          pull(Parameter)
+        
+        selectInput('prmsel', 'Select parameter:', choices = tosel)
+        
+      })
+    ),
+    column(6,
+      sliderInput('yrsel2', 'Select year range:', min = 1993, max = maxyr, value = c(1993, maxyr), step = 1, sep = '', width = '200%'),
+    )
+  ),
+  leafletOutput('sedmap')
+)
 ```
