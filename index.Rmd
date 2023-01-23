@@ -12,13 +12,8 @@ css: styles.css
 ```{r setup, include=F}
 knitr::opts_chunk$set(echo = F, message = F, warning = F)
 
-library(flexdashboard)
-library(tbeptools)
-library(mapview)
 library(dplyr)
 library(leaflet)
-library(sf)
-library(plotly)
 
 source('R/funcs.R')
 
@@ -28,11 +23,12 @@ fml <- 'Lato Light'
 
 maxyr <- 2021
 
+data('sedimentdata', package = 'tbeptools')
 load(file = 'data/tbbiscr.RData')
 load(file = 'data/segs.RData')
 
 # base matrix
-tbbimat <- show_tbbimatrix(tbbiscr, family = fml, txtsz = NULL) 
+tbbimat <- tbeptools::show_tbbimatrix(tbbiscr, family = fml, txtsz = NULL) 
 
 bbx <- sf::st_bbox(segs) %>%
     as.numeric()
@@ -60,7 +56,7 @@ benmat <- reactive({
     geom_segment(aes(x = 0.5, xend = 0.5, y = yrsel1 - 0.5, yend = yrsel1 + 0.5, lwd = lwid)) +
     geom_segment(aes(x = 9.5, xend = 9.5, y = yrsel1 - 0.5, yend = yrsel1 + 0.5, lwd = lwid))
   
-  out <- show_matrixplotly(p, tooltip = 'Action')
+  out <- tbeptools::show_matrixplotly(p, tooltip = 'Action')
   
   return(out)
 
@@ -85,12 +81,12 @@ benmap <- reactive({
         TBBICat == 'Degraded' ~ '#CC3231'
       )
     ) %>% 
-    st_as_sf(coords = c('Longitude', 'Latitude'), crs = 4326)
+    sf::st_as_sf(coords = c('Longitude', 'Latitude'), crs = 4326)
   
   # segment averages
   benyr <- tbbiscr %>% 
     filter(yr == yrsel1) %>% 
-    anlz_tbbimed(bay_segment = c("HB", "OTB", "MTB", "LTB", "TCB", "MR", "BCB")) %>% 
+    tbeptools::anlz_tbbimed(bay_segment = c("HB", "OTB", "MTB", "LTB", "TCB", "MR", "BCB")) %>% 
     mutate(
       outcome = case_when(
         TBBICat == 'Good' ~ '#2DC938', 
@@ -141,7 +137,7 @@ sedplo <- reactive({
   
   if(typsel == 'PEL summary'){
     
-    out <- show_sedimentpelave(sedimentdata, yrrng = yrsel2, plotly = T)
+    out <- tbeptools::show_sedimentpelave(sedimentdata, yrrng = yrsel2, plotly = T)
     
   }
   
@@ -149,7 +145,7 @@ sedplo <- reactive({
     
     req(prmsel)
     
-    out <- show_sedimentave(sedimentdata, param = prmsel, yrrng = yrsel2)
+    out <- tbeptools::show_sedimentave(sedimentdata, param = prmsel, yrrng = yrsel2)
     
   }
   
@@ -167,7 +163,7 @@ sedmap <- reactive({
 
   if(typsel == 'PEL summary'){
     
-    out <- show_sedimentpelmap(sedimentdata, yrrng = yrsel2)
+    out <- tbeptools::show_sedimentpelmap(sedimentdata, yrrng = yrsel2)
     
   }
   
@@ -175,7 +171,7 @@ sedmap <- reactive({
     
     req(prmsel)
     
-    out <- try(show_sedimentmap(sedimentdata, param = prmsel, yrrng = yrsel2), silent = TRUE)
+    out <- try(tbeptools::show_sedimentmap(sedimentdata, param = prmsel, yrrng = yrsel2), silent = TRUE)
     validate(
       need(inherits(out, 'leaflet'), paste('No TEL/PEL data for', prmsel))
     )
@@ -247,8 +243,8 @@ Column {.tabset .tabset-fade data-width=275}
 ### MATRIX RESULTS
 
 ```{r}
-output$benmat <- renderPlotly(benmat())
-plotlyOutput('benmat')
+output$benmat <- plotly::renderPlotly(benmat())
+plotly::plotlyOutput('benmat')
 ```
 
 ### Using this tab
@@ -281,8 +277,8 @@ Column {.tabset .tabset-fade data-width=275}
 ### SUMMARY RESULTS
 
 ```{r}
-output$sedplo <- renderPlotly(sedplo())
-plotlyOutput('sedplo')
+output$sedplo <- plotly::renderPlotly(sedplo())
+plotly::plotlyOutput('sedplo')
 ```
 
 ### Using this tab
