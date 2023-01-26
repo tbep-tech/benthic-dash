@@ -51,13 +51,15 @@ benmat <- reactive({
 
 })
 
+benmap <- leaflet::leafletProxy('benmap')
+
 # benthic index map
 observe({
   
   # inputs
   yrsel1 <- input$yrsel1
   req(yrsel1)
-  
+
   # polygons
   benpol <- benmed %>% 
     dplyr::filter(yr == yrsel1) %>% 
@@ -68,7 +70,7 @@ observe({
     dplyr::filter(yr == yrsel1)
   
   # map with custom legends
-  leaflet::leafletProxy('benmap') %>% 
+  benmap %>% 
     leaflet::clearMarkers() %>% 
     leaflet::clearShapes() %>% 
     leaflet::addPolygons(
@@ -129,10 +131,11 @@ sedmap <- reactive({
   typsel <- input$typsel
   prmsel <- input$prmsel
   yrsel2 <- input$yrsel2
-
+  sedmaploc <- isolate(sedmaploc()) # fucking important!
+  
   if(typsel == 'PEL summary'){
     
-    out <- tbeptools::show_sedimentpelmap(sedimentdata, yrrng = yrsel2)
+    out <- tbeptools::show_sedimentpelmap(sedimentdata, yrrng = yrsel2)  
     
   }
   
@@ -143,9 +146,26 @@ sedmap <- reactive({
     out <- tbeptools::show_sedimentmap(sedimentdata, param = prmsel, yrrng = yrsel2)
     
   }
-  
+
+  if(length(sedmaploc) != 0)
+  out <- out %>%
+    leaflet::setView(lng = sedmaploc$lng, lat = sedmaploc$lat, zoom = sedmaploc$zoom)
+
   return(out)
   
+})
+
+sedmaploc <- reactive({
+
+  if(is.null(input$sedmap_center))
+    return(list())
+
+  list(
+    zoom = input$sedmap_zoom,
+    lat = input$sedmap_center$lat,
+    lng = input$sedmap_center$lng
+  )
+
 })
 ```
 
@@ -293,7 +313,7 @@ Column {data-width=500}
 ### RESULTS FOR YEAR SELECTION
 
 ```{r}
-output$sedmap <- renderLeaflet({sedmap()})
+output$sedmap <- leaflet::renderLeaflet(sedmap())
 fillCol(flex = c(NA, 1),
   column(12,
     column(3, 
@@ -307,8 +327,8 @@ fillCol(flex = c(NA, 1),
         req(typsel != 'PEL summary')
         
         tosel <- prmlkup %>% 
-          filter(SedResultsType == typsel) %>% 
-          pull(Parameter)
+          dplyr::filter(SedResultsType == typsel) %>% 
+          dplyr::pull(Parameter)
         
         selectInput('prmsel', 'Select parameter:', choices = tosel)
         
@@ -318,6 +338,6 @@ fillCol(flex = c(NA, 1),
       sliderInput('yrsel2', 'Select year range:', min = 1993, max = maxyr, value = c(1993, maxyr), step = 1, sep = '', width = '200%'),
     )
   ),
-  leafletOutput('sedmap')
+  leaflet::leafletOutput('sedmap')
 )
 ```
