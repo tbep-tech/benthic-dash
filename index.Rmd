@@ -206,7 +206,7 @@ sedspemap <- reactive({
   prmsel2 <- input$prmsel2
   yrsel3 <- input$yrsel3
   sedspemaploc <- isolate(sedspemaploc()) # fucking important!
-  browser()
+
   spedat <- sedimentdata %>% 
     dplyr::filter(FundingProject %in% 'TBEP-Special')
 
