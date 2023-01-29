@@ -155,6 +155,7 @@ sedmap <- reactive({
   
 })
 
+# sediment dynamic location
 sedmaploc <- reactive({
 
   if(is.null(input$sedmap_center))
@@ -164,6 +165,83 @@ sedmaploc <- reactive({
     zoom = input$sedmap_zoom,
     lat = input$sedmap_center$lat,
     lng = input$sedmap_center$lng
+  )
+
+})
+
+# sediment special plot
+sedspeplo <- reactive({
+  
+  # inputs
+  typsel2 <- input$typsel2
+  prmsel2 <- input$prmsel2
+  yrsel3 <- input$yrsel3
+  
+  spedat <- sedimentdata %>% 
+    dplyr::filter(FundingProject %in% 'TBEP-Special')
+  
+  if(typsel2 == 'PEL summary'){
+    
+    out <- tbeptools::show_sedimentpelave(spedat, yrrng = yrsel3, plotly = T)
+    
+  }
+  
+  if(typsel2 != 'PEL summary'){
+    
+    req(prmsel2)
+
+    out <- tbeptools::show_sedimentave(spedat, param = prmsel2, yrrng = yrsel3, plotly = T)
+    
+  }
+  
+  return(out)
+  
+})
+
+# sediment map
+sedspemap <- reactive({
+  
+  # inputs
+  typsel2 <- input$typsel2
+  prmsel2 <- input$prmsel2
+  yrsel3 <- input$yrsel3
+  sedspemaploc <- isolate(sedspemaploc()) # fucking important!
+  browser()
+  spedat <- sedimentdata %>% 
+    dplyr::filter(FundingProject %in% 'TBEP-Special')
+
+  if(typsel2 == 'PEL summary'){
+    
+    out <- tbeptools::show_sedimentpelmap(spedat, yrrng = yrsel3)  
+    
+  }
+  
+  if(typsel2 != 'PEL summary'){
+    
+    req(prmsel2)
+    
+    out <- tbeptools::show_sedimentmap(spedat, param = prmsel2, yrrng = yrsel3)
+    
+  }
+
+  if(length(sedspemaploc) != 0)
+    out <- out %>%
+      leaflet::setView(lng = sedspemaploc$lng, lat = sedspemaploc$lat, zoom = sedspemaploc$zoom)
+
+  return(out)
+  
+})
+
+# sediment dynamic location
+sedspemaploc <- reactive({
+
+  if(is.null(input$sedspemap_center))
+    return(list())
+
+  list(
+    zoom = input$sedspemap_zoom,
+    lat = input$sedspemap_center$lat,
+    lng = input$sedspemap_center$lng
   )
 
 })
@@ -339,5 +417,55 @@ fillCol(flex = c(NA, 1),
     )
   ),
   leaflet::leafletOutput('sedmap')
+)
+```
+
+3 SPECIAL STUDY SITES
+===========================================================
+
+Column {.tabset .tabset-fade data-width=275}
+-----------------------------------------------------------------------
+
+### SUMMARY RESULTS
+
+```{r}
+output$sedplo <- plotly::renderPlotly(sedspeplo())
+plotly::plotlyOutput('sedspeplo')
+```
+
+### Using this tab
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### RESULTS FOR YEAR SELECTION
+
+```{r}
+output$sedspemap <- leaflet::renderLeaflet(sedspemap())
+fillCol(flex = c(NA, 1),
+  column(12,
+    column(3, 
+      selectInput('typsel2', 'Select type:', choices = c('PEL summary', c(unique(prmlkup$SedResultsType))))
+    ),
+    column(3, 
+      renderUI({
+        typsel <- input$typsel
+        
+        req(typsel)
+        req(typsel != 'PEL summary')
+        
+        tosel <- prmlkup %>% 
+          dplyr::filter(SedResultsType == typsel) %>% 
+          dplyr::pull(Parameter)
+        
+        selectInput('prmsel2', 'Select parameter:', choices = tosel)
+        
+      })
+    ),
+    column(6,
+      sliderInput('yrsel3', 'Select year:', min = 2002, max = maxyr, value = maxyr, step = 1, sep = '', width = '200%'),
+    )
+  ),
+  leaflet::leafletOutput('sedspemap')
 )
 ```
