@@ -108,7 +108,7 @@ sedplo <- reactive({
   
   if(typsel == 'PEL summary'){
     
-    out <- tbeptools::show_sedimentpelave(sedimentdata, yrrng = yrsel2, plotly = T)
+    out <- try(tbeptools::show_sedimentpelave(sedimentdata, yrrng = yrsel2, plotly = T), silent = T)
     
   }
   
@@ -116,9 +116,13 @@ sedplo <- reactive({
     
     req(prmsel)
 
-    out <- tbeptools::show_sedimentave(sedimentdata, param = prmsel, yrrng = yrsel2, plotly = T)
+    out <- try(tbeptools::show_sedimentave(sedimentdata, param = prmsel, yrrng = yrsel2, plotly = T), silent = T)
     
   }
+  
+  validate(
+    need(!inherits(out, 'try-error'), 'No data')
+  )
   
   return(out)
   
@@ -177,12 +181,9 @@ sedspeplo <- reactive({
   prmsel2 <- input$prmsel2
   yrsel3 <- input$yrsel3
   
-  spedat <- sedimentdata %>% 
-    dplyr::filter(FundingProject %in% 'TBEP-Special')
-  
   if(typsel2 == 'PEL summary'){
     
-    out <- tbeptools::show_sedimentpelave(spedat, yrrng = yrsel3, plotly = T)
+    out <- try(tbeptools::show_sedimentpelave(sedimentdata, yrrng = yrsel3, plotly = T, funding_proj = 'TBEP-Special'), silent = T)
     
   }
   
@@ -190,9 +191,13 @@ sedspeplo <- reactive({
     
     req(prmsel2)
 
-    out <- tbeptools::show_sedimentave(spedat, param = prmsel2, yrrng = yrsel3, plotly = T)
+    out <- try(tbeptools::show_sedimentave(sedimentdata, param = prmsel2, yrrng = yrsel3, plotly = T, funding_proj = 'TBEP-Special'), silent = T)
     
   }
+  
+  validate(
+    need(!inherits(out, 'try-error'), 'No data')
+  )
   
   return(out)
   
@@ -207,12 +212,9 @@ sedspemap <- reactive({
   yrsel3 <- input$yrsel3
   sedspemaploc <- isolate(sedspemaploc()) # fucking important!
 
-  spedat <- sedimentdata %>% 
-    dplyr::filter(FundingProject %in% 'TBEP-Special')
-
   if(typsel2 == 'PEL summary'){
     
-    out <- tbeptools::show_sedimentpelmap(spedat, yrrng = yrsel3)  
+    out <- tbeptools::show_sedimentpelmap(sedimentdata, yrrng = yrsel3, funding_proj = 'TBEP-Special')  
     
   }
   
@@ -220,7 +222,7 @@ sedspemap <- reactive({
     
     req(prmsel2)
     
-    out <- tbeptools::show_sedimentmap(spedat, param = prmsel2, yrrng = yrsel3)
+    out <- tbeptools::show_sedimentmap(sedimentdata, param = prmsel2, yrrng = yrsel3, funding_proj = 'TBEP-Special')
     
   }
 
@@ -429,7 +431,7 @@ Column {.tabset .tabset-fade data-width=275}
 ### SUMMARY RESULTS
 
 ```{r}
-output$sedplo <- plotly::renderPlotly(sedspeplo())
+output$sedspeplo <- plotly::renderPlotly(sedspeplo())
 plotly::plotlyOutput('sedspeplo')
 ```
 
@@ -449,13 +451,13 @@ fillCol(flex = c(NA, 1),
     ),
     column(3, 
       renderUI({
-        typsel <- input$typsel
+        typsel2 <- input$typsel2
         
-        req(typsel)
-        req(typsel != 'PEL summary')
+        req(typsel2)
+        req(typsel2 != 'PEL summary')
         
         tosel <- prmlkup %>% 
-          dplyr::filter(SedResultsType == typsel) %>% 
+          dplyr::filter(SedResultsType == typsel2) %>% 
           dplyr::pull(Parameter)
         
         selectInput('prmsel2', 'Select parameter:', choices = tosel)
@@ -463,7 +465,7 @@ fillCol(flex = c(NA, 1),
       })
     ),
     column(6,
-      sliderInput('yrsel3', 'Select year:', min = 2002, max = maxyr, value = maxyr, step = 1, sep = '', width = '200%'),
+      sliderInput('yrsel3', 'Select year:', min = 2002, max = maxyr, value = c(2002, maxyr), step = 1, sep = '', width = '200%'),
     )
   ),
   leaflet::leafletOutput('sedspemap')

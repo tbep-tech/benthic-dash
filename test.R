@@ -16,8 +16,7 @@ viz_monthly <- function(df, y_var, threshhold = NULL) {
     theme_minimal()
 }
 
-datin <-
-  nycflights13::flights %>%
+datin <- nycflights13::flights %>%
   filter(carrier %in% c('AA', 'DL', 'UA')) %>%
   mutate(ind_arr_delay = (arr_delay > 5)) %>%
   group_by(year, month, day, carrier) %>%
