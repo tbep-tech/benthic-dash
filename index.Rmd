@@ -16,6 +16,8 @@ box::use(
   dplyr[`%>%`]
 )
 
+library(leaflet.minicharts)
+
 cols <- c('#CC3231', '#E9C318', '#2DC938')
 
 maxyr <- 2021
@@ -27,6 +29,7 @@ load(file = 'data/benmed.RData')
 load(file = 'data/segs.RData')
 load(file = 'data/prmlkup.RData')
 load(file = 'data/tbbimat.RData')
+load(file = 'data/spedat.RData')
 ```
 
 ```{r reactives}
@@ -67,7 +70,8 @@ observe({
   
   # points
   benpts <- benpts %>% 
-    dplyr::filter(yr == yrsel1)
+    dplyr::filter(yr == yrsel1) %>% 
+    dplyr::filter(FundingProject == 'TBEP')
   
   # map with custom legends
   benmap %>% 
@@ -173,6 +177,29 @@ sedmaploc <- reactive({
 
 })
 
+# special study table
+spedattab <- reactive({
+
+  yrsel3 <- input$yrsel3
+  
+  # input
+  totab <- spedat %>% 
+    dplyr::filter(Year >= yrsel3[1] & Year <= yrsel3[2])
+  
+  out <- reactable::reactable(totab,
+    defaultColDef = reactable::colDef(
+      footerStyle = list(fontWeight = "bold"),
+      format = reactable::colFormat(digits = 0, separators = F),
+      align = 'left',
+      resizable = TRUE
+    ),
+    defaultPageSize = nrow(totab)
+    )
+  
+  return(out)
+  
+})
+
 # sediment special plot
 sedspeplo <- reactive({
   
@@ -203,14 +230,14 @@ sedspeplo <- reactive({
   
 })
 
-# sediment map
+# sediment special map
 sedspemap <- reactive({
   
   # inputs
   typsel2 <- input$typsel2
   prmsel2 <- input$prmsel2
   yrsel3 <- input$yrsel3
-  sedspemaploc <- isolate(sedspemaploc()) # fucking important!
+  sedspemaploc <- isolate(sedspemaploc())
 
   if(typsel2 == 'PEL summary'){
     
@@ -230,11 +257,14 @@ sedspemap <- reactive({
     out <- out %>%
       leaflet::setView(lng = sedspemaploc$lng, lat = sedspemaploc$lat, zoom = sedspemaploc$zoom)
 
+  # out <- out %>% 
+  #   leaflet.minicharts::syncWith('spemap')
+  
   return(out)
   
 })
 
-# sediment dynamic location
+# sediment special dynamic location
 sedspemaploc <- reactive({
 
   if(is.null(input$sedspemap_center))
@@ -247,11 +277,66 @@ sedspemaploc <- reactive({
   )
 
 })
+
+# benthic special map
+benspemap <- reactive({
+  
+  # inputs
+  yrsel3 <- input$yrsel3
+  benspemaploc <- isolate(benspemaploc())
+
+  req(yrsel3)
+  
+  # points
+  benptsyr <- benpts %>% 
+    dplyr::filter(yr >= yrsel3[1] & yr <= yrsel3[2]) %>% 
+    dplyr::filter(FundingProject == 'TBEP-Special')
+  
+  bbx <- as.numeric(sf::st_bbox(benptsyr))
+
+  out <- mapview::mapView(map.types = mapview::mapviewGetOption("basemaps")) %>%
+    .@map %>%
+    leaflet::addLegend("topright", labels = c("Healthy", "Intermediate", "Degraded"), colors = rev(cols), title = "TBBI Category", opacity = 1) %>%
+    leaflet::addCircleMarkers(
+      data = benptsyr,
+      layerId = ~StationID,
+      stroke = TRUE,
+      color = 'black',
+      fill = TRUE,
+      fillColor = ~outcome,
+      weight = 1,
+      fillOpacity = 1,
+      radius= 4,
+      label = ~paste0('Site ', StationID, ', TBBI: ', round(TBBI, 1), ', Category: ', TBBICat)
+    ) %>%
+    leaflet::fitBounds(lng1 = bbx[1], lat1 = bbx[2], lng2 = bbx[3], lat2 = bbx[4])
+
+  if(length(benspemaploc) != 0)
+    out <- out %>%
+      leaflet::setView(lng = benspemaploc$lng, lat = benspemaploc$lat, zoom = benspemaploc$zoom)
+
+  # out <- out %>% 
+  #   leaflet.minicharts::syncWith('spemap')
+  
+  return(out)
+  
+})
+
+# benthic special dynamic location
+benspemaploc <- reactive({
+
+  if(is.null(input$benspemap_center))
+    return(list())
+
+  list(
+    zoom = input$benspemap_zoom,
+    lat = input$benspemap_center$lat,
+    lng = input$benspemap_center$lng
+  )
+
+})
 ```
 
-```{r map}
-
-```
 
 ```{r downloadhandlers}
 ```
@@ -378,7 +463,7 @@ fillCol(flex = c(NA, 1),
 Column {.tabset .tabset-fade data-width=275}
 -----------------------------------------------------------------------
 
-### SUMMARY RESULTS
+### SEDIMENT SUMMARY RESULTS
 
 ```{r}
 output$sedplo <- plotly::renderPlotly(sedplo())
@@ -428,7 +513,14 @@ fillCol(flex = c(NA, 1),
 Column {.tabset .tabset-fade data-width=275}
 -----------------------------------------------------------------------
 
-### SUMMARY RESULTS
+### SPECIAL STUDY SITES
+
+```{r}
+output$spedattab <- reactable::renderReactable(spedattab())
+reactable::reactableOutput('spedattab')
+```
+
+### SEDIMENT SUMMARY RESULTS
 
 ```{r}
 output$sedspeplo <- plotly::renderPlotly(sedspeplo())
@@ -444,6 +536,7 @@ Column {data-width=500}
 
 ```{r}
 output$sedspemap <- leaflet::renderLeaflet(sedspemap())
+output$benspemap <- leaflet::renderLeaflet(benspemap())
 fillCol(flex = c(NA, 1),
   column(12,
     column(3, 
@@ -468,6 +561,9 @@ fillCol(flex = c(NA, 1),
       sliderInput('yrsel3', 'Select year:', min = 2002, max = maxyr, value = c(2002, maxyr), step = 1, sep = '', width = '200%'),
     )
   ),
-  leaflet::leafletOutput('sedspemap')
+  fillRow(
+    leaflet::leafletOutput('sedspemap'),
+    leaflet::leafletOutput('benspemap')
+  )
 )
 ```

@@ -68,7 +68,7 @@ plot_ui <- function(id) {
 plot_server <- function(id, df, vbl, threshhold = NULL) {
 
   moduleServer(id, function(input, output, session) {
-
+    browser()
     plot <- reactive({viz_monthly(df(), vbl, threshhold())})
     output$plot <- renderPlot({plot()})
 

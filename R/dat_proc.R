@@ -4,6 +4,7 @@ library(dplyr)
 library(filter)
 library(sf)
 library(leaflet)
+library(readxl)
 
 cols <- c('#CC3231', '#E9C318', '#2DC938')
 
@@ -79,3 +80,10 @@ load(file = here('data/tbbiscr.RData'))
 tbbimat <- tbeptools::show_tbbimatrix(tbbiscr, family = fml, txtsz = NULL)
 
 save(tbbimat, file = here('data/tbbimat.RData'))
+
+# special study table -----------------------------------------------------
+
+spedat <- read_excel('T:/09_TECHNICAL_PROJECTS/BENTHIC_MONITORING/Special_Study_Sites/Benthic_Special_Projects.xlsx') %>%
+  select(Year, `Short description` = Acronym, `Long description` = Segment)
+
+save(spedat, file = here('data/spedat.RData'))
