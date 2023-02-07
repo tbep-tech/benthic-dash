@@ -16,8 +16,6 @@ box::use(
   dplyr[`%>%`]
 )
 
-library(leaflet.minicharts)
-
 cols <- c('#CC3231', '#E9C318', '#2DC938')
 
 maxyr <- 2021
@@ -256,9 +254,6 @@ sedspemap <- reactive({
   if(length(sedspemaploc) != 0)
     out <- out %>%
       leaflet::setView(lng = sedspemaploc$lng, lat = sedspemaploc$lat, zoom = sedspemaploc$zoom)
-
-  # out <- out %>% 
-  #   leaflet.minicharts::syncWith('spemap')
   
   return(out)
   
@@ -315,9 +310,6 @@ benspemap <- reactive({
     out <- out %>%
       leaflet::setView(lng = benspemaploc$lng, lat = benspemaploc$lat, zoom = benspemaploc$zoom)
 
-  # out <- out %>% 
-  #   leaflet.minicharts::syncWith('spemap')
-  
   return(out)
   
 })
