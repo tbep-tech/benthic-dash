@@ -347,6 +347,16 @@ Column {.tabset .tabset-fade data-width=650}
 
 #### WELCOME TO THE TAMPA BAY BENTHIC DASHBOARD!
 
+```{r, echo = F, out.width = '100%', fig.align = 'center'}
+knitr::include_graphics('www/bannerimage.png')
+```
+
+This dashboard summarizes over twenty-five years of benthic data from Tampa Bay, Florida.  All data were collected by staff from the Environmental Protection Commission of Hillsborough County.  The data provide information on the organisms living in or near the bay bottom and contaminants of concern in the sediment.  The condition of the bay bottom is one of several indicators used by the Tampa Bay Estuary Program to assess overall health of the bay. The different pages under the __PAGE SELECTION__ menu can be used to view synthesized results from the benthic data:
+
+1) [__TAMPA BAY BENTHIC INDEX__](#tampa-bay-benthic-index): View annual summaries by major bay segments for the Tampa Bay Benthic Index
+1) [__SEDIMENT CONTAMINANTS__](#sediment-contaminants): View summaries of sediment contaminant concentrations
+1) [__SPECIAL STUDY SITES__](#special-study-sites): View results for special study sites for the Tampa Bay Estuary Program, including benthic index and contaminant results
+
 The plots in this dashboard are interactive and display options can be controlled using a mouse. Most plots include a [control menu](https://help.plot.ly/zoom-pan-hover-controls/) on the top with different options for viewing the data.  For example, click the camera icon to download a png file for a plot.
 
 <br>
@@ -357,7 +367,15 @@ knitr::include_graphics('www/plotcontrols.PNG')
 
 #### Website information
 
-Text
+<a href="https://tbep-tech.github.io/tbeptools/articles/tbbi.html" target="__blank" rel="noopener noreferrer"><img class="wp-image-14010 alignnone " src="www/tbeptoolshex.png" alt="" width="200" height="200" /></a>
+
+The page source content can be viewed on [Github](https://github.com/tbep-tech/benthic-dash){target="_blank"}. Nearly all of the data, tables, and plots were created using functions in the [tbeptools](https://tbep-tech.github.io/tbeptools){target="_blank"} R software package.  Please see the [vignette](https://tbep-tech.github.io/tbeptools/articles/tbbi.html){target="_blank"} for a detailed overview of how you can use these functions on your own to work with the data. 
+
+Questions and comments about the dashboard can be sent to [Marcus Beck](mailto:mbeck@tbep.org). Like this app? Share it on social media using the [\#TampaBayOpenSci](https://twitter.com/hashtag/TampaBayOpenSci?src=hashtag_click){target="_blank"} hashtag.  
+
+Citation info here: FORTHCOMING
+
+<a rel='license' href='http://creativecommons.org/licenses/by/4.0/' target='__blank'><img alt='Creative Commons License' style='border-width:0' src='https://i.creativecommons.org/l/by/4.0/88x31.png' /></a>&nbsp;&nbsp;This website is licensed under a <a rel='license' href='http://creativecommons.org/licenses/by/4.0/'>Creative Commons Attribution 4.0 International License</a>.
 
 </div>
 <div class = "col-md-2"></div>
@@ -371,13 +389,31 @@ Text
 
 #### How to understand and use the benthic data
 
+Benthic invertebrates are a group of relatively small organisms that live the majority of their life cycles in or near bay bottom sediments. They are a food source for small fish and crustaceans and can provide water quality benefits through sediment removal during feeding. Tampa Bay supports many different benthic organisms. The organisms at any location vary depending on the salinity, sediment type, temperature, dissolved oxygen, and presence of excess nutrients and/or toxic contaminants.
+
+Benthic data provide critical information on the health of organisms that live in or near the bay bottom and how they response to contaminants of concern in the sediment.  The data are synthesized to communicate the results in an easily interpretable format.  The summaries on this dashboard are shown using the Tampa Bay Benthic Index and contaminant concentrations relative to thresholds of interest.  Special study sites for the Tampa Bay Estuary Program are also shown.  Note that benthic samples require approximately one year of processing and the most recent year on the dashboard will typically lag the present year. 
+
+#### Benthic index
+
+The Tampa Bay Benthic Index (TBBI) provides an estimate of the health of benthic communities in Tampa Bay. The TBBI is scaled from 0-100 with values <73 classified as "Degraded", from 73-87 as "Intermediate", and >87 as “Healthy”. These classifications are assigned to individual sampling stations in Tampa Bay. Collectively, bay segments are assigned to categories of <span style="color:#2DC938; text-shadow: 0 0 3px #333;">__Good__</span>, <span style="color:#E9C318; text-shadow: 0 0 3px #333;">__Fair__</span>, and <span style="color:#CC3231; text-shadow: 0 0 3px #333;">__Poor__</span> based on the distribution of classifications across all stations in each segment. This information provides a general summary of benthic community health across the bay, shown below as an annual report card.  These results are shown on the [__TAMPA BAY BENTHIC INDEX__](#tampa-bay-benthic-index) tab. 
+
+#### Contaminant data
+
+In addition to biological data, sediment contaminant concentrations are measured at sites within Tampa Bay. These include over 100 different constituents grouped broadly as metals, organics, or other. The concentrations of these constituents can be compared relative to Threshold Effects Levels (TEL) or Potential Effects Levels (PEL), when available, as relative indications of the likelihood that the concentrations will have toxic effects on invertebrates that inhabit the sediments. The PEL or TEL values are specific to each contaminant.  They can be evaluated separately for each contaminant or combined across contaminants to provide an overall assessment. The latter is called the PEL Ratio, which can be shown as a graded category. These results are shown on the [__SEDIMENT CONTAMINANTS__](#sediment-contaminants) tab.   
+
+#### Special study sites
+
+Finally, the Tampa Bay Estuary Program requests special study sites to be monitored each year, in addition to the routine sites covered by the Environmental Protection Commission of Hillsborough County. These sites typically focus on areas of interest each year that may not be adequately covered by the routine monitoring.  Benthic and contaminant data are collected at these sites. These results are shown on the [__SPECIAL STUDY SITES__](#special-study-sites) tab.
+
+Additional information on the benthic monitoring program can be found [here](https://drive.google.com/file/d/1XqwAbvhSRSDMHyGhVtrUTZpVmPqkFsWI/view?usp=drivesdk){target="_blank}.  
+
 </div>
 <div class = "col-md-2"></div>
 </div>
 
 ### DOWNLOAD DATA
 
-1 TAMPA BAY BENTHIC INDEX
+1 TAMPA BAY BENTHIC INDEX {data-navmenu="PAGE SELECTION"}
 ===========================================================
 
 Column {.tabset .tabset-fade data-width=275}
@@ -392,12 +428,46 @@ plotly::plotlyOutput('benmat')
 
 ### Using this tab
 
-This tab shows the overall assessment of the TBBI as management action categories:
+This tab shows the overall assessment of the TBBI score for each bay segment across all years when data were available. The TBBI provides an estimate of the health of benthic communities in Tampa Bay. The TBBI is scaled from 0-100 with values <73 classified as "Degraded", from 73-87 as "Intermediate", and >87 as “Healthy”. These classifications are assigned to individual sampling stations in Tampa Bay. Collectively, bay segments are assigned to categories of <span style="color:#2DC938; text-shadow: 0 0 3px #333;">__Good__</span>, <span style="color:#E9C318; text-shadow: 0 0 3px #333;">__Fair__</span>, and <span style="color:#CC3231; text-shadow: 0 0 3px #333;">__Poor__</span> based on the distribution of classifications across all stations in each segment. 
+
+The __MATRIX RESULTS__ show the TBBI scores each year for each segment, which are based on the distribution of site scores in each segment. The black rectangle shows the selected year from the year slider above the map. The bay segments shown at the top of the matrix are as follows:
+
+* __OTB__: Old Tampa Bay
+* __HB__: Hillsborough Bay
+* __MTB__: Middle Tampa Bay
+* __LTB__: Lower Tampa Bay
+* __TCB__: Terra Ceia Bay
+* __MR__: Manatee River
+* __BCB__: Boca Ciega Bay
+
+Combined results are also shown for the whole bay (__All__) and for the whole bay weighted (__All (wt)__) by the relative sizes of each bay segment.
+
+Placing the cursor over the matrix will show the outcome category assigned to each segment and year. 
+
+```{r, out.width='30%', fig.align='center'}
+knitr::include_graphics('www/matrixex.PNG')
+```
+<br>
+
+In the above example, the category for Hillsborough Bay in 1995 was <span style="color:#CC3231; text-shadow: 0 0 3px #333;">__Poor__</span>.  
+
+The __MAP SUMMARY__ on the right shows the segment outcome categories from the matrix using color in the segment polygons and the stations (points) used to estimate the segment outcome.  Note that the segment outcome categories for the TBBI are characterized as <span style="color:#2DC938; text-shadow: 0 0 3px #333;">__Good__</span>, <span style="color:#E9C318; text-shadow: 0 0 3px #333;">__Fair__</span>, and <span style="color:#CC3231; text-shadow: 0 0 3px #333;">__Poor__</span>, whereas the station scores are categorized as <span style="color:#2DC938; text-shadow: 0 0 3px #333;">__Healthy__</span>, <span style="color:#E9C318; text-shadow: 0 0 3px #333;">__Intermediate__</span>, and <span style="color:#CC3231; text-shadow: 0 0 3px #333;">__Degraded__</span>. 
+
+Placing the cursor over the segment or station will reveal additional information. 
+
+<br>
+```{r, out.width='50%', fig.align='center'}
+knitr::include_graphics('www/sitemapex.PNG')
+```
+<br>
+
+The year slider on the top can be used to select which year is shown on the map. A reference box on the *MATRIX RESULTS* tab shows which year is selected. Selecting the play button will cycle through all years in the data, with the maps and plots updating with each year. 
+
 
 Column {data-width=500}
 -----------------------------------------------------------------------
 
-### RESULTS BY YEAR
+### MAP SUMMARY
 
 ```{r}
 bbx <- sf::st_bbox(segs) %>%
@@ -449,7 +519,7 @@ fillCol(flex = c(NA, 1),
 )
 ```
 
-2 OVERALL SEDIMENT CONTAMINANTS
+2 SEDIMENT CONTAMINANTS {data-navmenu="PAGE SELECTION"}
 ===========================================================
 
 Column {.tabset .tabset-fade data-width=275}
@@ -464,10 +534,49 @@ plotly::plotlyOutput('sedplo')
 
 ### Using this tab
 
+This tab shows sediment contaminant concentrations measured at sites within Tampa Bay.  These include over 100 different constituents grouped broadly as metals, organics, or other. The concentrations of these constituents can be compared relative to different thresholds as an indication of the likelihood that the concentrations will have toxic effects on invertebrates that inhabit the sediments.  The two relevant thresholds are:
+
+* __Threshold Effects Levels (TEL)__: Concentration at which a toxic response has started to be observed in benthic organisms
+* __Potential Effects Levels (PEL)__: Concentration at which a large percentage of the benthic population shows a toxic response
+
+The TEL and PEL values are specific to each contaminant and follow sediment quality guidelines established for Florida.  Values are not avaiable for all contaminants.  Additional, the number of contaminants that exceed the PEL value at a site can be assessed as the overall PEL Ratio, which can be shown as a graded category.  Both the __SEDIMENT SUMMARY RESULTS__ and the __MAP SUMMARY__ can be used to assess the the PEL Ratios or individual contaminants relative to TEL/PEL values. 
+
+The __SEDIMENT SUMMARY RESULTS__ show a summary of PEL Ratios or selected contaminants by bay segment.  The summaries show the average and 95% confidence interval, with bay segment abbreviations as follows:
+
+* __OTB__: Old Tampa Bay
+* __HB__: Hillsborough Bay
+* __MTB__: Middle Tampa Bay
+* __LTB__: Lower Tampa Bay
+* __TCB__: Terra Ceia Bay
+* __MR__: Manatee River
+* __BCB__: Boca Ciega Bay
+
+Depending on the selection, horizontal lines on the plot show either the breakpoints for the PEL Ratio grades or the applicable TEL/PEL values for the selected contaminant.  A dotted horizontal line shows the grand mean across all bay segments.  Contaminants that do not have TEL/PEL values show only summaries of the averages and their confidence intervals.  
+
+Placing the cursor over a point on the plot will show additional information about the summaries.  
+
+<br>
+```{r, out.width='30%', fig.align='center'}
+knitr::include_graphics('www/pelsumex.PNG')
+```
+<br>
+
+The __MAP SUMMARY__ provides a spatial representation of the sites that are summarized in the __SEDIMENT SUMMARY RESULTS__ tab. Each point represents a station that was sampled, with the color depending on selection.  PEL Ratio grades are shown if the PEL summary is selected.  If an individual contaminant is selected, the points will be colored if they are below the TEL, between the TEL/PEL, or above the PEL.  The concentration of the contaminant will be shown as a color relative to all other stations if TEL/PEL vales are not available for a contaminant.  
+
+Placing the cursor over a point on the map will show additional information about the station.  
+
+<br>
+```{r, out.width='80%', fig.align='center'}
+knitr::include_graphics('www/pelmapex.PNG')
+```
+<br>
+
+The year range slider at the top determines which stations are used for the summary plot in the __SEDIMENT SUMMARY RESULTS__ tab and on the map in the __MAP SUMMARY__ tab. 
+
 Column {data-width=500}
 -----------------------------------------------------------------------
 
-### RESULTS FOR YEAR SELECTION
+### MAP SUMMARY
 
 ```{r}
 output$sedmap <- leaflet::renderLeaflet(sedmap())
@@ -499,7 +608,7 @@ fillCol(flex = c(NA, 1),
 )
 ```
 
-3 SPECIAL STUDY SITES
+3 SPECIAL STUDY SITES {data-navmenu="PAGE SELECTION"}
 ===========================================================
 
 Column {.tabset .tabset-fade data-width=275}
@@ -524,7 +633,7 @@ plotly::plotlyOutput('sedspeplo')
 Column {data-width=500}
 -----------------------------------------------------------------------
 
-### RESULTS FOR YEAR SELECTION
+### TBBI (LEFT) AND SEDIMENT (RIGHT) MAP SUMMARIES
 
 ```{r}
 output$sedspemap <- leaflet::renderLeaflet(sedspemap())
