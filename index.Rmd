@@ -208,7 +208,7 @@ sedspeplo <- reactive({
   
   if(typsel2 == 'PEL summary'){
     
-    out <- try(tbeptools::show_sedimentpelave(sedimentdata, yrrng = yrsel3, plotly = T, funding_proj = 'TBEP-Special'), silent = T)
+    out <- try(tbeptools::show_sedimentpelave(sedimentdata, yrrng = yrsel3, plotly = T, funding_proj = 'TBEP-Special', ylim = c(0, NA)), silent = T)
     
   }
   
