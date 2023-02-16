@@ -740,7 +740,7 @@ knitr::include_graphics('www/pelsumex.PNG')
 ```
 <br>
 
-The maps on the right provide a spatial representation of the special study sites that are summarized in the __SEDIMENT SUMMARY RESULTS__ tab and the TBBI scores. For the sediment results on the left map, each point represents a station that was sampled, with the color depending on the selection.  PEL ratio summary grades are shown if the PEL summary is selected.  If an individual contaminant is selected, the points will be colored if they are below the TEL, between the TEL/PEL, or above the PEL.  The concentration of the contaminant will be shown as a continuous color relative to all other stations if TEL/PEL vales are not available for a contaminant.  
+The __MAP SUMMARIES__ on the right provide a spatial representation of the special study sites that are summarized in the __SEDIMENT SUMMARY RESULTS__ tab and the TBBI scores. For the sediment summaries on the left map, each point represents a station that was sampled, with the color depending on the selection.  PEL ratio summary grades are shown if the PEL summary is selected.  If an individual contaminant is selected, the points will be colored if they are below the TEL, between the TEL/PEL, or above the PEL.  The concentration of the contaminant will be shown as a continuous color relative to all other stations if TEL/PEL vales are not available for a contaminant.  
 
 <br>
 ```{r, out.width='80%', fig.align='center'}
@@ -758,12 +758,12 @@ knitr::include_graphics('www/sitemapex2.PNG')
 ```
 <br>
 
-The year range slider at the top determines which special study sites are shown in the __SPECIAL STUDY SITES__ table, the summary plot in the __SEDIMENT SUMMARY RESULTS__ tab, and the points in both maps on the right tab.
+The year range slider at the top determines which special study sites are shown in the __SPECIAL STUDY SITES__ table, the summary plot in the __SEDIMENT SUMMARY RESULTS__ tab, and the points in both maps in the __MAP SUMMARIES__ tab.
 
 Column {data-width=500}
 -----------------------------------------------------------------------
 
-### SEDIMENT (LEFT) AND TBBI (RIGHT) MAP SUMMARIES
+### MAP SUMMARIES
 
 ```{r}
 output$sedspemap <- leaflet::renderLeaflet(sedspemap())
@@ -793,8 +793,8 @@ fillCol(flex = c(NA, 1),
     )
   ),
   fillRow(
-    leaflet::leafletOutput('sedspemap'),
-    leaflet::leafletOutput('benspemap')
+    fillCol(flex = c(NA, 1), 'Sediment summaries', leaflet::leafletOutput('sedspemap')),
+    fillCol(flex = c(NA, 1), 'TBBI summaries', leaflet::leafletOutput('benspemap'))
   )
 )
 ```
