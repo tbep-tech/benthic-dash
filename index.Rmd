@@ -471,7 +471,7 @@ Benthic data provide critical information on the health of organisms that live i
 
 #### Benthic index
 
-The TBBI provides an estimate of the health of benthic communities in Tampa Bay. The TBBI is scaled from 0-100 with values <73 classified as <span style="color:#CC3231; text-shadow: 0 0 3px #333;">__Degraded__</span>, from 73-87 as <span style="color:#E9C318; text-shadow: 0 0 3px #333;">__Intermediate__</span>, and >87 as <span style="color:#2DC938; text-shadow: 0 0 3px #333;">__Healthy__</span>. These classifications are assigned to individual sampling stations in Tampa Bay. Collectively, bay segments are assigned to categories of <span style="color:#CC3231; text-shadow: 0 0 3px #333;">__Poor__</span>, <span style="color:#E9C318; text-shadow: 0 0 3px #333;">__Fair__</span>, and <span style="color:#2DC938; text-shadow: 0 0 3px #333;">__Good__</span> based on the distribution of classifications across all stations in each segment. This information provides a general summary of benthic community health across the bay.  These results are shown on the [__TAMPA BAY BENTHIC INDEX__](#tampa-bay-benthic-index) tab. 
+The TBBI provides an estimate of the health of benthic communities in Tampa Bay. The TBBI is scaled from 0-100 with values <73 classified as <span style="color:#CC3231">__Degraded__</span>, from 73-87 as <span style="color:#E9C318">__Intermediate__</span>, and >87 as <span style="color:#2DC938">__Healthy__</span>. These classifications are assigned to individual sampling stations in Tampa Bay. Collectively, bay segments are assigned to categories of <span style="color:#CC3231">__Poor__</span>, <span style="color:#E9C318">__Fair__</span>, and <span style="color:#2DC938">__Good__</span> based on the distribution of classifications across all stations in each segment. This information provides a general summary of benthic community health across the bay.  These results are shown on the [__TAMPA BAY BENTHIC INDEX__](#tampa-bay-benthic-index) tab. 
 
 #### Contaminant data
 
@@ -507,7 +507,7 @@ plotly::plotlyOutput('benmat')
 
 ### Using this tab
 
-This tab shows the overall assessment of Tampa Bay Benthic Index (TBBI) scores for each bay segment across all years when data were available. The TBBI provides an estimate of the health of benthic communities in Tampa Bay. The TBBI is scaled from 0-100 with values <73 classified as <span style="color:#CC3231; text-shadow: 0 0 3px #333;">__Degraded__</span>, from 73-87 as <span style="color:#E9C318; text-shadow: 0 0 3px #333;">__Intermediate__</span>, and >87 as <span style="color:#2DC938; text-shadow: 0 0 3px #333;">__Healthy__</span>. These classifications are assigned to individual sampling stations in Tampa Bay. Collectively, bay segments are assigned to categories of <span style="color:#CC3231; text-shadow: 0 0 3px #333;">__Poor__</span>, <span style="color:#E9C318; text-shadow: 0 0 3px #333;">__Fair__</span>, and <span style="color:#2DC938; text-shadow: 0 0 3px #333;">__Good__</span> based on the distribution of classifications across all stations in each segment. 
+This tab shows the overall assessment of Tampa Bay Benthic Index (TBBI) scores for each bay segment across all years when data were available. The TBBI provides an estimate of the health of benthic communities in Tampa Bay. The TBBI is scaled from 0-100 with values <73 classified as <span style="color:#CC3231">__Degraded__</span>, from 73-87 as <span style="color:#E9C318">__Intermediate__</span>, and >87 as <span style="color:#2DC938">__Healthy__</span>. These classifications are assigned to individual sampling stations in Tampa Bay. Collectively, bay segments are assigned to categories of <span style="color:#CC3231">__Poor__</span>, <span style="color:#E9C318">__Fair__</span>, and <span style="color:#2DC938">__Good__</span> based on the distribution of classifications across all stations in each segment. 
 
 The __MATRIX RESULTS__ show the TBBI scores each year for each segment, which are based on the distribution of site scores in each segment. The black rectangle shows the selected year from the year slider above the map. The bay segments shown at the top of the matrix are as follows:
 
@@ -528,9 +528,9 @@ knitr::include_graphics('www/matrixex.PNG')
 ```
 <br>
 
-In the above example, the category for Hillsborough Bay in 1995 was <span style="color:#CC3231; text-shadow: 0 0 3px #333;">__Poor__</span>.  
+In the above example, the category for Hillsborough Bay in 1995 was <span style="color:#CC3231">__Poor__</span>.  
 
-The __MAP SUMMARY__ on the right shows the segment outcome categories from the matrix using color in the segment polygons and the stations (points) used to estimate the segment outcome.  Note that the segment outcome categories for the TBBI are characterized as <span style="color:#CC3231; text-shadow: 0 0 3px #333;">__Poor__</span>, <span style="color:#E9C318; text-shadow: 0 0 3px #333;">__Fair__</span>, and <span style="color:#2DC938; text-shadow: 0 0 3px #333;">__Good__</span>, whereas the station scores are categorized as <span style="color:#CC3231; text-shadow: 0 0 3px #333;">__Degraded__</span>, <span style="color:#E9C318; text-shadow: 0 0 3px #333;">__Intermediate__</span>, and <span style="color:#2DC938; text-shadow: 0 0 3px #333;">__Healthy__</span>. 
+The __MAP SUMMARY__ on the right shows the segment outcome categories from the matrix using color in the segment polygons and the stations (points) used to estimate the segment outcome.  Note that the segment outcome categories for the TBBI are characterized as <span style="color:#CC3231">__Poor__</span>, <span style="color:#E9C318">__Fair__</span>, and <span style="color:#2DC938">__Good__</span>, whereas the station scores are categorized as <span style="color:#CC3231">__Degraded__</span>, <span style="color:#E9C318">__Intermediate__</span>, and <span style="color:#2DC938">__Healthy__</span>. 
 
 Placing the cursor over the segment or station will reveal additional information. 
 
@@ -748,7 +748,7 @@ knitr::include_graphics('www/pelmapex2.PNG')
 ```
 <br>
 
-The right map shows TBBI scores for the special study sites. The TBBI score at each site is scaled from 0-100 with values <73 classified as <span style="color:#CC3231; text-shadow: 0 0 3px #333;">__Degraded__</span>, from 73-87 as <span style="color:#E9C318; text-shadow: 0 0 3px #333;">__Intermediate__</span>, and >87 as <span style="color:#2DC938; text-shadow: 0 0 3px #333;">__Healthy__</span>.  
+The right map shows TBBI scores for the special study sites. The TBBI score at each site is scaled from 0-100 with values <73 classified as <span style="color:#CC3231">__Degraded__</span>, from 73-87 as <span style="color:#E9C318">__Intermediate__</span>, and >87 as <span style="color:#2DC938">__Healthy__</span>.  
 
 Placing the cursor over a special study site will reveal additional information. 
 
