@@ -31,7 +31,7 @@ save(segs, file = here('data/segs.RData'))
 load(file = here('data/tbbiscr.RData'))
 
 benmed <- tbbiscr %>%
-  tbeptools::anlz_tbbimed(bay_segment = c("HB", "OTB", "MTB", "LTB", "TCB", "MR", "BCB")) %>%
+  tbeptools::anlz_tbbimed() %>%
   mutate(
     outcome = case_when(
       TBBICat == 'Good' ~ cols[3],
@@ -87,3 +87,10 @@ spedat <- read_excel('T:/09_TECHNICAL_PROJECTS/BENTHIC_MONITORING/Special_Study_
   select(Year, `Short description` = Acronym, `Long description` = Segment)
 
 save(spedat, file = here('data/spedat.RData'))
+
+# PEL ratio summaries -----------------------------------------------------
+
+pelsum <- anlz_sedimentpel(sedimentdata)
+
+save(pelsum, file = here('data/pelsum.RData'))
+

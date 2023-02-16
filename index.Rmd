@@ -28,6 +28,7 @@ load(file = 'data/segs.RData')
 load(file = 'data/prmlkup.RData')
 load(file = 'data/tbbimat.RData')
 load(file = 'data/spedat.RData')
+load(file = 'data/pelsum.RData')
 ```
 
 ```{r reactives}
@@ -64,7 +65,7 @@ observe({
   # polygons
   benpol <- benmed %>% 
     dplyr::filter(yr == yrsel1) %>% 
-    dplyr::left_join(segs, ., by = 'bay_segment')
+    dplyr::inner_join(segs, ., by = 'bay_segment')
   
   # points
   benpts <- benpts %>% 
@@ -327,10 +328,82 @@ benspemaploc <- reactive({
   )
 
 })
+
+# download data
+dldat <- reactive({
+  
+  typseldl <- input$typseldl
+  prmseldl <- input$prmseldl
+  yrseldl <- input$yrseldl
+  
+  out <- NULL
+  
+  if(typseldl == 'TBBI bay segment')
+    out <- benmed %>% 
+      dplyr::select(-outcome)
+  
+  if(typseldl ==  'TBBI stations')
+    out <- tbbiscr %>% 
+      dplyr::select(-ProgramID) %>% 
+      dplyr::filter(AreaAbbr %in% c("OTB", "HB", "MTB", "LTB", "TCB", "MR", "BCB"))
+
+  if(typseldl == 'PEL summary')
+    out <- pelsum
+
+  if(!typseldl %in% c('TBBI bay segment', 'TBBI stations', 'PEL summary') & !is.null(prmseldl))
+    out <- sedimentdata %>% 
+      dplyr::filter(Parameter == prmseldl) %>% 
+      dplyr::select(-MDLnum, -PQLnum, -ProgramId, -BetweenTELPEL, -ExceedsPEL, -PELRatio, -PreparationDate, -AnalysisTimeMerge, -SedResultsType) %>% 
+      dplyr::filter(AreaAbbr %in% c("OTB", "HB", "MTB", "LTB", "TCB", "MR", "BCB")) %>% 
+      dplyr::arrange(yr, StationID)
+
+  req(!is.null(out))
+  
+  out <- out %>% 
+    dplyr::filter(yr >= yrseldl[1] & yr <= yrseldl[2])
+  
+  return(out)
+  
+})
+  
+# reactable table
+dltab <- reactive({
+  
+  dldat <- dldat()
+
+  out <- reactable::reactable(dldat,
+    columns = list(
+      yr = reactable::colDef(format = reactable::colFormat(digits = 0)), 
+      StationID = reactable::colDef(format = reactable::colFormat(digits = 0))
+    ),
+    defaultColDef = reactable::colDef(
+      footerStyle = list(fontWeight = "bold"),
+      format = reactable::colFormat(digits = 3, separators = F),
+      resizable = TRUE, 
+      align = 'left'
+    ),
+    filterable = T,
+    defaultPageSize = 15
+    )
+  
+  return(out)
+  
+})
 ```
 
-
 ```{r downloadhandlers}
+# download transect table
+output$dwnld <- downloadHandler(
+  filename = function(){'benthicdata.csv'},
+  content = function(file){
+    
+    # inputs
+    dldat <- dldat()
+    
+    write.csv(dldat, file, quote = T, row.names = F)
+    
+  }
+)
 ```
 
 OVERVIEW
@@ -356,6 +429,7 @@ This dashboard summarizes over twenty-five years of benthic data from Tampa Bay,
 1) [__TAMPA BAY BENTHIC INDEX__](#tampa-bay-benthic-index): View annual summaries by major bay segments for the Tampa Bay Benthic Index (TBBI)
 1) [__SEDIMENT CONTAMINANTS__](#sediment-contaminants): View summaries of sediment contaminant concentrations
 1) [__SPECIAL STUDY SITES__](#special-study-sites-1): View results for special study sites for the Tampa Bay Estuary Program, including benthic index and contaminant results
+1) [__DATA DOWNLOADS__](#data-downloads): Download TBBI scores or sediment contaminant data
 
 The plots in this dashboard are interactive and display options can be controlled using a mouse. Most plots include a [control menu](https://help.plot.ly/zoom-pan-hover-controls/){target="_blank"} on the top with different options for viewing the data.  For example, click the camera icon to download a plot.
 
@@ -416,8 +490,6 @@ Additional information on the benthic monitoring program can be found [here](htt
 <div class = "col-md-2"></div>
 </div>
 
-### DOWNLOAD DATA
-
 1 TAMPA BAY BENTHIC INDEX {data-navmenu="PAGE SELECTION"}
 ===========================================================
 
@@ -445,7 +517,7 @@ The __MATRIX RESULTS__ show the TBBI scores each year for each segment, which ar
 * __MR__: Manatee River
 * __BCB__: Boca Ciega Bay
 
-Combined results are also shown for the whole bay (__All__) and for the whole bay weighted (__All (wt)__) by the relative sizes of each bay segment.
+Combined results are also shown for the whole bay (__All__) and for the whole bay weighted (__All (wt)__) by the relative areas of each bay segment.
 
 Placing the cursor over the matrix will show the outcome category assigned to each segment and year. 
 
@@ -482,7 +554,7 @@ tbbiscryr <- tbbiscr %>%
   dplyr::filter(yr == maxyr)
 benmedyr <- benmed %>%
   dplyr::filter(yr == maxyr) %>%
-  dplyr::left_join(segs, ., by = 'bay_segment')
+  dplyr::inner_join(segs, ., by = 'bay_segment')
 benptsyr <- benpts %>%
   dplyr::filter(yr == maxyr)
 
@@ -724,3 +796,126 @@ fillCol(flex = c(NA, 1),
   )
 )
 ```
+
+4 DATA DOWNLOADS {data-navmenu="PAGE SELECTION"}
+===========================================================
+
+Column {.tabset .tabset-fade data-width=650}
+-----------------------------------------------------------------------
+
+### DOWNLOAD
+
+```{r}
+output$dltabout <- reactable::renderReactable(dltab())
+fillCol(flex =c(NA, 1, NA),
+  column(12,
+    column(3, 
+      selectInput('typseldl', 'Select type:', choices = c('TBBI bay segment', 'TBBI stations', 'PEL summary', c(unique(prmlkup$SedResultsType))))
+    ),
+    column(3, 
+      renderUI({
+        typseldl <- input$typseldl
+        
+        req(typseldl)
+        req(!typseldl %in% c('TBBI bay segment', 'TBBI stations', 'PEL summary'))
+        
+        tosel <- prmlkup %>% 
+          dplyr::filter(SedResultsType == typseldl) %>% 
+          dplyr::pull(Parameter)
+        
+        selectInput('prmseldl', 'Select parameter:', choices = tosel)
+        
+      })
+    ),
+    column(6,
+      sliderInput('yrseldl', 'Select year range:', min = 1993, max = maxyr, value = c(1993, maxyr), step = 1, sep = '', width = '200%')
+    )
+  ),
+  reactable::reactableOutput('dltabout'),
+  shinyWidgets::downloadBttn('dwnld', 'Download data', style = 'simple', block = T, color = 'success')
+)
+```
+
+### METADATA
+
+Source data used to create the data herein were obtained from the Environmental Protection Commission of Hillsborough County and can be accessed [here](https://epcbocc.sharepoint.com/:f:/s/Share/EtOJfziTTa9FliL1oROb9OsBRZU-nO60fu_0NRC162hHjQ?e=4gUXgJ){target="_blank"}. Data provided on the dashboard are made available for exploratory purposes only.
+
+__TBBI bay segment__: Tampa Bay Benthic Index (TBBI) scores summarized by bay segment  
+
+* *bay_segment*: Abbreviated name for the bay segment
+     * *OTB*: Old Tampa Bay
+     * *HB*: Hillsborough Bay
+     * *MTB*: Middle Tampa Bay
+     * *LTB*: Lower Tampa Bay
+     * *TCB*: Terra Ceia Bay
+     * *MR*: Manatee River
+     * *BCB*: Boca Ciega Bay
+     * *All*: All segments
+     * *All (wt)*: All segmented weighted by area
+* *yr*: Year of the survey
+* *Degraded*: Proportion of stations in the segment categorized as degraded for the TBBI
+* *Healthy*: Proportion of stations in the segment categorized as healthy for the TBBI
+* *Intermediate*: Proportion of stations in the segment categorized as intermediate for the TBBI
+* *TBBICat*: Overall segment category as Poor, Fair, or Good based on the proportion of sites in each category
+
+__TBBI stations__: Tampa Bay Benthic Index (TBBI) scores by sampling station
+
+* *StationID*: Unique station ID
+* *AreaAbbr*: Abbreviated name for the bay segment
+     * *OTB*: Old Tampa Bay
+     * *HB*: Hillsborough Bay
+     * *MTB*: Middle Tampa Bay
+     * *LTB*: Lower Tampa Bay
+     * *TCB*: Terra Ceia Bay
+     * *MR*: Manatee River
+     * *BCB*: Boca Ciega Bay
+* *FundingProject*: Project name responsible for funding the sampling
+* *ProgramName*: Name of the monitoring program (Benthic Monitoring is routine)
+* *Latitude*: Latitude of the station in decimal degrees, EPSG 4326
+* *Longitude*: Longitude of the station in decimal degrees, EPSG 4326
+* *date*: Date of the sample
+* *yr*: Year of the sample
+* *TBBI*: Tampa Bay Benthic Index score
+* *TBBICat*: Tampa Bay Benthic Index category as degraded, intermediate, or healthy
+
+__PEL summary__: PEL ratio summaries by sampling station
+
+* *yr*: Year of the sample
+* *AreaAbbr*: Abbreviated name for the bay segment
+     * *OTB*: Old Tampa Bay
+     * *HB*: Hillsborough Bay
+     * *MTB*: Middle Tampa Bay
+     * *LTB*: Lower Tampa Bay
+     * *TCB*: Terra Ceia Bay
+     * *MR*: Manatee River
+     * *BCB*: Boca Ciega Bay
+* *StationNumber*: Unique station number
+* *Latitude*: Latitude of the station in decimal degrees, EPSG 4326
+* *Longitude*: Longitude of the station in decimal degrees, EPSG 4326
+* *PELRatio*: Proportion of contaminants at a station that exceed PEL threshold (0 - 1)
+* *Grade*: Grade assigned to PEL ratio summary (A, B, C, D, F), based on percentile breaks at 10, 25, 75, and 90 across all samples (1993 to 2017) 
+
+__Metals__, __Organics__, or __Other__: Sediment contaminant concentrations for the selected parameter by sampling station
+
+* *ProgramName*: Name of the monitoring program (Benthic Monitoring is routine)
+* *FundingProject*: Project name responsible for funding the sampling
+* *yr*: Year of the sample
+* *AreaAbbr*: Abbreviated name for the bay segment
+     * *OTB*: Old Tampa Bay
+     * *HB*: Hillsborough Bay
+     * *MTB*: Middle Tampa Bay
+     * *LTB*: Lower Tampa Bay
+     * *TCB*: Terra Ceia Bay
+     * *MR*: Manatee River
+     * *BCB*: Boca Ciega Bay
+* *StationID*: Unique station ID
+* *StationNumber*: Unique station number
+* *Latitude*: Latitude of the station in decimal degrees, EPSG 4326
+* *Longitude*: Longitude of the station in decimal degrees, EPSG 4326
+* *Replicate*: Qualifier indicating if the sample is a replicate or not (dup or no)
+* *Parameter*: Name of the parameter
+* *ValueAdjusted*: Concentration of the sample
+* *Units*: Units for the sample
+* *Qualifier*: Text qualifier for the sample
+* *TEL*: Threshold Effects Level, concentration at which a toxic response has started to be observed in benthic organisms
+* *PEL*: Potential Effects Level, concentration at which a large percentage of the benthic population shows a toxic response
