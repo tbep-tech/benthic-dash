@@ -916,6 +916,6 @@ __Metals__, __Organics__, or __Other__: Sediment contaminant concentrations for 
 * *Parameter*: Name of the parameter
 * *ValueAdjusted*: Concentration of the sample
 * *Units*: Units for the sample
-* *Qualifier*: Text qualifier for the sample
+* *Qualifier*: Text qualifier for the sample following [Florida DEP definitions](https://floridadep.gov/sites/default/files/62-160_help-document_0.pdf){target="_blank"}
 * *TEL*: Threshold Effects Level, concentration at which a toxic response has started to be observed in benthic organisms
 * *PEL*: Potential Effects Level, concentration at which a large percentage of the benthic population shows a toxic response
