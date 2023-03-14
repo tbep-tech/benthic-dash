@@ -84,6 +84,12 @@ save(tbbimat, file = here('data/tbbimat.RData'))
 # special study table -----------------------------------------------------
 
 spedat <- read_excel('T:/09_TECHNICAL_PROJECTS/BENTHIC_MONITORING/Special_Study_Sites/Benthic_Special_Projects.xlsx') %>%
+  mutate(
+    Acronym = case_when(
+      Acronym == 'Tires' ~ 'PTF',
+      T ~ Acronym
+    )
+  ) %>%
   select(Year, `Short description` = Acronym, `Long description` = Segment)
 
 save(spedat, file = here('data/spedat.RData'))
