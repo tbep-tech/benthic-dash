@@ -441,6 +441,14 @@ knitr::include_graphics('www/plotcontrols.PNG')
 ```
 <br>
 
+#### Data sources
+
+Source data used on this website were obtained from the benthic monitoring program administered by the Environmental Protection Commission of Hillsborough County, with support from Pinellas and Manatee County. Original data can be accessed [here](https://epcbocc.sharepoint.com/:f:/s/Share/EtOJfziTTa9FliL1oROb9OsBRZU-nO60fu_0NRC162hHjQ?e=4gUXgJ){target="_blank"}. Data provided on the dashboard are made available for exploratory purposes only. Please consult the [25-year report](https://drive.google.com/file/d/1XqwAbvhSRSDMHyGhVtrUTZpVmPqkFsWI/view){target="_blank"} for a comprehensive summary of the benthic monitoring data.   
+
+```{r, fig.align='center', out.width='60%'}
+knitr::include_graphics('www/logos.png')
+```
+
 #### Website information
 
 <a href="https://tbep-tech.github.io/tbeptools/articles/tbbi.html" target="__blank" rel="noopener noreferrer"><img class="wp-image-14010 alignnone " src="www/tbeptoolshex.png" alt="" width="200" height="200" /></a>
