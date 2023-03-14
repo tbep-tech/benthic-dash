@@ -75,39 +75,39 @@ h2,h3,h4,h5 {
 .level3 {
   font-family: 'Roboto';
   font-weight: 300;
-  color: #958984;
+  color: #00000;
 }
 
 .chart-title {
   font-family: 'Roboto';
   font-weight: 300;
   font-style: italic;
-  color: #958984;
+  color: #00000;
 }
 
 .nav-tabs {
   font-family: 'Roboto';
   font-weight: 300;
   font-style: italic;
-  color: #958984;
+  color: #00000;
 }
 
 .control-label {
   font-family: 'Roboto';
   font-weight: 300;
-  color: #958984;
+  color: #00000;
 }
 
 .shiny-text-output {
   font-family: 'Roboto';
   font-weight: 300;
-  color: #958984;
+  color: #00000;
 }
 
 .material-switch {
   font-family: 'Roboto';
   font-weight: 300;
-  color: #958984;
+  color: #00000;
 }
 
 /* shiny slider stuff */
@@ -166,7 +166,7 @@ h2,h3,h4,h5 {
 .leaflet-control { /* leaflet legends, control boxes */
   font-family: 'Roboto';
   font-weight: 300;
-  color: #958984;
+  color: #00000;
 }
 
 /* removes all but one trace from the rangeslider */
@@ -179,7 +179,7 @@ h2,h3,h4,h5 {
 .caption {
   font-family: 'Roboto';
   font-weight: 300;
-  color: #958984;
+  color: #00000;
   font-style: italic;
 }
 
