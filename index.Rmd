@@ -21,7 +21,7 @@ box::use(
 cols <- c('#CC3231', '#E9C318', '#2DC938')
 
 maxyr <- 2021
-
+ 
 data('sedimentdata', package = 'tbeptools')
 load(file = 'data/tbbiscr.RData')
 load(file = 'data/benpts.RData')
@@ -588,6 +588,8 @@ benmapbs <- mapview::mapView(map.types = mapview::mapviewGetOption("basemaps")) 
     label = ~paste0('Site ', StationID, ', TBBI: ', round(TBBI, 1), ', Category: ', TBBICat)
   )
 output$benmap <- leaflet::renderLeaflet(benmapbs)
+
+tags$style(HTML(".js-irs-0 .irs-single-0, .js-irs-0 .irs-bar-edge-0, .js-irs-0 .irs-bar, .js-irs-0 .irs-line {background: #E5E5E5 !important; border: 1px #E5E5E5 !important;}"))
 fillCol(flex = c(NA, 1),
   column(12,
     column(6,
