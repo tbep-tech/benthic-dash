@@ -98,7 +98,7 @@ observe({
       weight = 1,
       fillOpacity = 1,
       radius= 4,
-      label = ~paste0('Site ', StationID, ', TBBI: ', round(TBBI, 1), ', Category: ', TBBICat)
+      label = ~paste0('StationNumber ', StationNumber, ', TBBI: ', round(TBBI, 1), ', Category: ', TBBICat)
     )
   
 })
@@ -305,7 +305,7 @@ benspemap <- reactive({
       weight = 1,
       fillOpacity = 1,
       radius= 4,
-      label = ~paste0('Site ', StationID, ', TBBI: ', round(TBBI, 1), ', Category: ', TBBICat)
+      label = ~paste0('StationNumber ', StationNumber, ', TBBI: ', round(TBBI, 1), ', Category: ', TBBICat)
     ) %>%
     leaflet::fitBounds(lng1 = bbx[1], lat1 = bbx[2], lng2 = bbx[3], lat2 = bbx[4])
 
@@ -593,7 +593,7 @@ benmapbs <- mapview::mapView(map.types = mapview::mapviewGetOption("basemaps")) 
     weight = 1,
     fillOpacity = 1,
     radius= 4,
-    label = ~paste0('Site ', StationID, ', TBBI: ', round(TBBI, 1), ', Category: ', TBBICat)
+    label = ~paste0('StationNumber ', StationNumber, ', TBBI: ', round(TBBI, 1), ', Category: ', TBBICat)
   )
 output$benmap <- leaflet::renderLeaflet(benmapbs)
 
