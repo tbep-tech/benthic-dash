@@ -87,10 +87,15 @@ spedat <- read_excel('T:/09_TECHNICAL_PROJECTS/BENTHIC_MONITORING/Special_Study_
   mutate(
     Acronym = case_when(
       Acronym == 'Tires' ~ 'PTF',
+      Acronym == 'Piney Point' ~ 'PP',
       T ~ Acronym
+    ),
+    Segment = case_when(
+      Segment == 'April & September' ~ 'Piney Point sampling, spring and fall',
+      T ~ Segment
     )
   ) %>%
-  select(Year, `Short description` = Acronym, `Long description` = Segment)
+  select(Year, Description = Segment, `Station number acronym` = Acronym)
 
 save(spedat, file = here('data/spedat.RData'))
 

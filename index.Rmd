@@ -750,7 +750,9 @@ knitr::include_graphics('www/pelsumex.PNG')
 ```
 <br>
 
-The __MAP SUMMARIES__ on the right provide a spatial representation of the special study sites that are summarized in the __SEDIMENT SUMMARY RESULTS__ tab and the TBBI scores. For the sediment summaries on the left map, each point represents a station that was sampled, with the color depending on the selection.  PEL ratio summary grades are shown if the PEL summary is selected.  If an individual contaminant is selected, the points will be colored if they are below the TEL, between the TEL/PEL, or above the PEL.  The concentration of the contaminant will be shown as a continuous color relative to all other stations if TEL/PEL vales are not available for a contaminant.  
+The __MAP SUMMARIES__ on the right provide a spatial representation of the special study sites that are summarized in the __SEDIMENT SUMMARY RESULTS__ tab and the TBBI scores. For the sediment summaries on the left map, each point represents a station that was sampled, with the color depending on the selection.  PEL ratio summary grades are shown if the PEL summary is selected.  If an individual contaminant is selected, the points will be colored if they are below the TEL, between the TEL/PEL, or above the PEL.  The concentration of the contaminant will be shown as a continuous color relative to all other stations if TEL/PEL vales are not available for a contaminant. 
+
+Hovering the mouse cursor over each site will reveal additional information, including the station number, which can be useful for identifying which special study sites correspond to each project in a given year.  For example, 2021 Piney Point sites have the PP acronym in the station number, which can also be viewed from the station number acronym column in the table on the __SPECIAL STUDY SITES__ tab.  
 
 <br>
 ```{r, out.width='80%', fig.align='center'}
