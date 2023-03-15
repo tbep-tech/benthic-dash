@@ -762,14 +762,6 @@ knitr::include_graphics('www/pelmapex2.PNG')
 
 The right map shows TBBI scores for the special study sites. The TBBI score at each site is scaled from 0-100 with values <73 classified as <span style="color:#CC3231">__Degraded__</span>, from 73-87 as <span style="color:#E9C318">__Intermediate__</span>, and >87 as <span style="color:#2DC938">__Healthy__</span>.  
 
-Placing the cursor over a special study site will reveal additional information. 
-
-<br>
-```{r, out.width='60%', fig.align='center'}
-knitr::include_graphics('www/sitemapex2.PNG')
-```
-<br>
-
 The year range slider at the top determines which special study sites are shown in the __SPECIAL STUDY SITES__ table, the summary plot in the __SEDIMENT SUMMARY RESULTS__ tab, and the points in both maps in the __MAP SUMMARIES__ tab.
 
 Column {data-width=500}
