@@ -354,6 +354,7 @@ dldat <- reactive({
 
   if(!typseldl %in% c('TBBI bay segment', 'TBBI stations', 'PEL summary') & !is.null(prmseldl))
     out <- sedimentdata %>% 
+      tbeptools::anlz_sedimentaddtot(pelave = FALSE) %>% 
       dplyr::filter(Parameter == prmseldl) %>% 
       dplyr::select(-MDLnum, -PQLnum, -ProgramId, -BetweenTELPEL, -ExceedsPEL, -PELRatio, -PreparationDate, -AnalysisTimeMerge, -SedResultsType) %>% 
       dplyr::filter(AreaAbbr %in% c("OTB", "HB", "MTB", "LTB", "TCB", "MR", "BCB")) %>% 

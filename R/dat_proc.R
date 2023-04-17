@@ -1,7 +1,6 @@
 library(tbeptools)
 library(here)
 library(dplyr)
-library(filter)
 library(sf)
 library(leaflet)
 library(readxl)
@@ -64,6 +63,7 @@ save(benpts, file = here('data/benpts.RData'))
 
 # parameter lookup
 prmlkup <- sedimentdata %>%
+  anlz_sedimentaddtot(pelave = F) %>%
   select(SedResultsType, Parameter) %>%
   unique() %>%
   filter(SedResultsType %in% c('Metals', 'Organics') | grepl('TC|TIC|TOC', Parameter)) %>%
