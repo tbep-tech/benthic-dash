@@ -185,7 +185,8 @@ spedattab <- reactive({
   
   # input
   totab <- spedat %>% 
-    dplyr::filter(Year >= yrsel3[1] & Year <= yrsel3[2])
+    dplyr::filter(Year >= yrsel3[1] & Year <= yrsel3[2]) %>% 
+    dplyr::arrange(-Year)
   
   out <- reactable::reactable(totab,
     defaultColDef = reactable::colDef(
