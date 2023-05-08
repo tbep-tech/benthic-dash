@@ -104,6 +104,29 @@ observe({
 })
 
 # sediment plot
+alplo <- reactive({
+  
+  # inputs
+  typsel <- input$typsel
+  prmsel <- input$prmsel
+  yrsel2 <- input$yrsel2
+  
+  out <- NULL
+  if(typsel == 'Metals'){
+    
+    out <- try(tbeptools::show_sedimentalratio(sedimentdata, param = prmsel, yrrng = yrsel2, plotly = T), silent = T)
+    
+  }
+  
+  validate(
+    need(!inherits(out, 'try-error') & !is.null(out), 'Select different metal contaminant')
+  )
+  
+  return(out)
+  
+})
+
+# aluminum ratio plot
 sedplo <- reactive({
   
   # inputs
@@ -631,6 +654,13 @@ output$sedplo <- plotly::renderPlotly(sedplo())
 plotly::plotlyOutput('sedplo')
 ```
 
+### METAL:ALUMINUM RATIO
+
+```{r}
+output$alplo <- plotly::renderPlotly(alplo())
+plotly::plotlyOutput('alplo')
+```
+
 ### Using this tab
 
 This tab shows sediment contaminant concentrations measured at sites within Tampa Bay.  These include over 100 different constituents grouped broadly as metals, organics, or other. The concentrations of these constituents can be compared relative to different thresholds as an indication of the likelihood that the concentrations will have toxic effects on invertebrates that inhabit the sediments.  The two relevant thresholds are:
@@ -640,7 +670,7 @@ This tab shows sediment contaminant concentrations measured at sites within Tamp
 
 The TEL and PEL values are specific to each contaminant and follow sediment quality guidelines established for Florida.  Values are not available for all contaminants.  Additionally, the proportion of contaminants that exceed the PEL value at a site can be assessed as the PEL ratio summary, which can be shown as a proportion on the summary plot or as a graded category on the map.  Both the __SEDIMENT SUMMARY RESULTS__ and the __MAP SUMMARY__ can be used to assess the PEL summary or individual contaminants relative to TEL/PEL values. 
 
-The __SEDIMENT SUMMARY RESULTS__ show a summary of PEL ratio summaries or selected contaminants by bay segment.  The summaries show the average and 95% confidence interval, with bay segment abbreviations as follows:
+The __SEDIMENT SUMMARY RESULTS__ shows a summary of PEL ratio summaries or selected contaminants by bay segment.  The summaries show the average and 95% confidence interval, with bay segment abbreviations as follows:
 
 * __OTB__: Old Tampa Bay
 * __HB__: Hillsborough Bay
@@ -657,6 +687,13 @@ Placing the cursor over a point on the plot will show additional information abo
 <br>
 ```{r, out.width='30%', fig.align='center'}
 knitr::include_graphics('www/pelsumex.PNG')
+```
+<br>
+
+The __METAL:ALUMINUM RATIO__ tab shows a plot of concentrations for a selected metal parameter against aluminum concentrations. Aluminum is a common metal in sediments and showing the ratio of a contaminant compared to aluminum provides a comparison relative to background concentrations, i.e., higher ratios suggest levels greater than background. The black lines show the linear fit of a log-log model and the 95% prediction intervals.  Lines for the TEL/PEL values for the selected contaminant are shown, if available, and the points are colored and keyed by bay segment.  Points by bay segment can be turned off or on by clicking the legend item. Placing the cursor over a point on the plot will show additional information. 
+<br>
+```{r, out.width='30%', fig.align='center'}
+knitr::include_graphics('www/alratioex.png')
 ```
 <br>
 
