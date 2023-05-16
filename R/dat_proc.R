@@ -6,6 +6,7 @@ library(leaflet)
 library(readxl)
 
 cols <- c('#CC3231', '#E9C318', '#2DC938')
+maxyr <- 2021
 
 # tbbi scores ---------------------------------------------------------------------------------
 
@@ -95,9 +96,88 @@ spedat <- read_excel('T:/09_TECHNICAL_PROJECTS/BENTHIC_MONITORING/Special_Study_
       T ~ Segment
     )
   ) %>%
-  select(Year, Description = Segment, `Station number acronym` = Acronym)
+  filter(!fordash %in% 'rm') %>%
+  filter(Year <= maxyr) %>%
+  select(Year, Description = Segment, Acronym)
+
+# add 2019 mcbay sediment special study info
+toadd <- tibble(
+  Year = 2019,
+  Description = 'McKay Bay',
+  Acronym = 'MCB'
+)
+
+# combine
+spedat <- bind_rows(spedat, toadd) %>%
+  arrange(Year, Description)
 
 save(spedat, file = here('data/spedat.RData'))
+
+# special study data --------------------------------------------------------------------------
+
+# these must be processed not using tbeptools function to compare with spedat
+# see T:\09_TECHNICAL_PROJECTS\BENTHIC_MONITORING\Special_Study_Sites\Benthic_Special_Projects.xlsx for match of spedat not processed (prior to above) with sediment or benthic TBEP-Special data
+# see T:\09_TECHNICAL_PROJECTS\BENTHIC_MONITORING\Special_Study_Sites\staid.csv for sediment data with station acronyms not matched to those in spedat after post-processing
+# for all cases, file used for spedat is not altered except noting rows to remove that don't match
+# linking key is the Acronym column in spedat, sedspedat, benspedat
+
+sedspedat <- sedimentdata %>%
+  filter(FundingProject == 'TBEP-Special') %>%
+  mutate(
+    Acronym = regmatches(StationNumber, regexpr('([a-zA-Z]+)', StationNumber)),
+    Acronym = ifelse(Acronym %in% c('PPf', 'PPs'), 'PP', Acronym),
+    Acronym = case_when(
+      Acronym == 'CRB' & yr == 2003 ~ 'LBE',
+      Acronym == 'CH' ~ 'CH5',
+      Acronym == 'FDE' ~ 'FD-E',
+      Acronym == 'FDW' ~ 'FD-W',
+      Acronym == 'CPB' ~ 'CBSS',
+      Acronym %in% c('BCB', 'LTB', 'MTB', 'OTB') & yr == 2018 ~ 'MicPla',
+      Acronym == 'HB' & StationNumber == '18HB07' ~ 'MicPla',
+      Acronym == 'HB' & StationNumber %in% c(paste0('18HB0', c(1:6))) ~ 'OyRest',
+      Acronym == 'MR' ~ 'MROyster',
+      T ~ Acronym
+    ),
+    AreaAbbr = case_when(
+      AreaAbbr == 'MCB' ~ 'HB',
+      T ~ AreaAbbr
+    )
+  ) %>%
+  filter(!(yr == 2002 & Acronym == 'DHB')) %>% # no record of these sites
+  filter(!(yr == 2011 & Acronym == 'BC')) %>% # no record of these sites
+  filter(!(yr == 2011 & Acronym == 'MC')) # no record of these sites
+
+# only used for the map, preprocessed above
+load(file = here('data/benpts.RData'))
+
+benspedat <- benpts %>%
+  filter(FundingProject == 'TBEP-Special') %>%
+  mutate(
+    Acronym = regmatches(StationNumber, regexpr('([a-zA-Z]+)', StationNumber)),
+    Acronym = ifelse(Acronym %in% c('PPf', 'PPs'), 'PP', Acronym),
+    Acronym = case_when(
+      Acronym == 'CRB' & yr == 2003 ~ 'LBE',
+      Acronym == 'CH' ~ 'CH5',
+      Acronym == 'FDE' ~ 'FD-E',
+      Acronym == 'FDW' ~ 'FD-W',
+      Acronym == 'CPB' ~ 'CBSS',
+      Acronym %in% c('BCB', 'LTB', 'MTB', 'OTB') & yr == 2018 ~ 'MicPla',
+      Acronym == 'HB' & StationNumber == '18HB07' ~ 'MicPla',
+      Acronym == 'HB' & StationNumber %in% c(paste0('18HB0', c(1:6))) ~ 'OyRest',
+      Acronym == 'MR' ~ 'MROyster',
+      T ~ Acronym
+    ),
+    AreaAbbr = case_when(
+      AreaAbbr == 'MCB' ~ 'HB',
+      T ~ AreaAbbr
+    )
+  ) %>%
+  filter(!(yr == 2002 & Acronym == 'DHB')) %>% # no record of these sites
+  filter(!(yr == 2011 & Acronym == 'BC')) %>% # no record of these sites
+  filter(!(yr == 2011 & Acronym == 'MC')) # no record of these sites
+
+save(sedspedat, file = here('data/sedspedat.RData'))
+save(benspedat, file = here('data/benspedat.RData'))
 
 # PEL ratio summaries -----------------------------------------------------
 

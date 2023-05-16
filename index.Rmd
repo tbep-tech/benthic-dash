@@ -31,6 +31,8 @@ load(file = 'data/prmlkup.RData')
 load(file = 'data/tbbimat.RData')
 load(file = 'data/spedat.RData')
 load(file = 'data/pelsum.RData')
+load(file = 'data/benspedat.RData')
+load(file = 'data/sedspedat.RData')
 ```
 
 ```{r reactives}
@@ -221,12 +223,16 @@ spedattab <- reactive({
       align = 'left',
       resizable = TRUE
     ),
-    defaultPageSize = nrow(totab)
+    defaultPageSize = nrow(totab), 
+    selection = 'multiple'
     )
   
   return(out)
   
 })
+
+# selected rows of special study site table
+spedatsel <- reactive(reactable::getReactableState("spedattab", "selected"))
 
 # special study aluminum ratio plot
 spealplo <- reactive({
@@ -240,7 +246,7 @@ spealplo <- reactive({
     need(typsel2 == 'Metals', 'Select metals')
   )
   
-  out <- try(tbeptools::show_sedimentalratio(sedimentdata, param = prmsel2, yrrng = yrsel3, funding_proj = 'TBEP-Special', plotly = T), silent = T)
+  out <- try(tbeptools::show_sedimentalratio(sedspedat, param = prmsel2, yrrng = yrsel3, funding_proj = 'TBEP-Special', plotly = T), silent = T)
     
   validate(
     need(!inherits(out, 'try-error'), 'Select different metal contaminant')
@@ -259,8 +265,8 @@ sedspeplo <- reactive({
   yrsel3 <- input$yrsel3
   
   if(typsel2 == 'PEL summary'){
-    
-    out <- try(tbeptools::show_sedimentpelave(sedimentdata, yrrng = yrsel3, plotly = T, funding_proj = 'TBEP-Special', ylim = c(0, NA)), silent = T)
+    browser()
+    out <- try(tbeptools::show_sedimentpelave(sedspedat, yrrng = yrsel3, plotly = T, funding_proj = 'TBEP-Special', ylim = c(0, NA)), silent = T)
     
   }
   
@@ -268,7 +274,7 @@ sedspeplo <- reactive({
     
     req(prmsel2)
 
-    out <- try(tbeptools::show_sedimentave(sedimentdata, param = prmsel2, yrrng = yrsel3, plotly = T, funding_proj = 'TBEP-Special'), silent = T)
+    out <- try(tbeptools::show_sedimentave(sedspedat, param = prmsel2, yrrng = yrsel3, plotly = T, funding_proj = 'TBEP-Special'), silent = T)
     
   }
   
@@ -291,7 +297,7 @@ sedspemap <- reactive({
 
   if(typsel2 == 'PEL summary'){
     
-    out <- tbeptools::show_sedimentpelmap(sedimentdata, yrrng = yrsel3, funding_proj = 'TBEP-Special')  
+    out <- tbeptools::show_sedimentpelmap(sedspedat, yrrng = yrsel3, funding_proj = 'TBEP-Special')  
     
   }
   
@@ -299,7 +305,7 @@ sedspemap <- reactive({
     
     req(prmsel2)
     
-    out <- try(tbeptools::show_sedimentmap(sedimentdata, param = prmsel2, yrrng = yrsel3, funding_proj = 'TBEP-Special'), silent = T)
+    out <- try(tbeptools::show_sedimentmap(sedspedat, param = prmsel2, yrrng = yrsel3, funding_proj = 'TBEP-Special'), silent = T)
     
     validate(
       need(!inherits(out, 'try-error'), 'No data')
@@ -339,7 +345,7 @@ benspemap <- reactive({
   req(yrsel3)
   
   # points
-  benptsyr <- benpts %>% 
+  benptsyr <- benspedat %>% 
     dplyr::filter(yr >= yrsel3[1] & yr <= yrsel3[2]) %>% 
     dplyr::filter(FundingProject == 'TBEP-Special')
   
@@ -775,8 +781,12 @@ Column {.tabset .tabset-fade data-width=275}
 ### SPECIAL STUDY SITES
 
 ```{r}
+output$spedatsel <- renderPrint(print(spedatsel()))
 output$spedattab <- reactable::renderReactable(spedattab())
-reactable::reactableOutput('spedattab')
+fluidRow(heights = c(1, NA),
+  shiny::verbatimTextOutput('spedatsel'),
+  reactable::reactableOutput('spedattab')
+)
 ```
 
 ### SEDIMENT SUMMARY RESULTS
