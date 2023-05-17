@@ -502,8 +502,14 @@ sedspebbx <- reactive({
   out <- sedspedatsel$dat %>% 
     dplyr::select(Longitude, Latitude) %>% 
     unique %>% 
-    sf::st_as_sf(coords = c('Longitude', 'Latitude'), crs = 4326) %>% 
-    sf::st_buffer(dist = 100) %>% 
+    sf::st_as_sf(coords = c('Longitude', 'Latitude'), crs = 4326)
+  
+  # buffer if only one point
+  if(nrow(out) == 1)
+    out <- out %>% 
+      sf::st_buffer(dist = 100)
+  
+  out <- out %>% 
     sf::st_bbox() %>% 
     as.numeric()
   
