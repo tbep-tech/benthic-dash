@@ -503,6 +503,7 @@ sedspebbx <- reactive({
     dplyr::select(Longitude, Latitude) %>% 
     unique %>% 
     sf::st_as_sf(coords = c('Longitude', 'Latitude'), crs = 4326) %>% 
+    sf::st_buffer(dist = 100) %>% 
     sf::st_bbox() %>% 
     as.numeric()
   
