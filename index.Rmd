@@ -375,7 +375,6 @@ sedspemap <- reactive({
   typsel2 <- input$typsel2
   prmsel2 <- input$prmsel2
   sedspedatsel <- sedspedatsel()
-  sedspemaploc <- isolate(sedspemaploc())
 
   dat <- sedspedatsel$dat
   yrrng <- sedspedatsel$yrrng
@@ -398,26 +397,37 @@ sedspemap <- reactive({
     
   }
 
-  if(length(sedspemaploc) != 0)
+  if(!is.null(sedspemaploc) & is.null(sedspezom)){
+    
     out <- out %>%
-      leaflet::setView(lng = sedspemaploc$lng, lat = sedspemaploc$lat, zoom = sedspemaploc$zoom)
-  
+      leaflet::fitBounds(lng1 = sedspemaploc$lng1, lat1 = sedspemaploc$lat1, lng2 = sedspemaploc$lng2, lat2 = sedspemaploc$lat2)
+    
+  }
+
+  if(!is.null(sedspezom) & is.null(sedspemaploc)){
+    
+    out <- out %>% 
+      leaflet::fitBounds(lng1 = sedspezom[1], lat1 = sedspezom[2], lng2 = sedspezom[3], lat2 = sedspezom[4])
+
+  }
+
   return(out)
   
 })
 
 # sediment special dynamic location
-sedspemaploc <- reactive({
+makeReactiveBinding('sedspemaploc')
+observeEvent(input$sedspemap_bounds, {
 
-  if(is.null(input$sedspemap_center))
-    return(list())
-
-  list(
-    zoom = input$sedspemap_zoom,
-    lat = input$sedspemap_center$lat,
-    lng = input$sedspemap_center$lng
+  sedspemaploc <<- list(
+    lng1 = input$sedspemap_bounds$west,
+    lat1 = input$sedspemap_bounds$south,
+    lng2 = input$sedspemap_bounds$east,
+    lat2 = input$sedspemap_bounds$north
   )
-
+  
+  sedspezom <<- NULL
+  
 })
 
 # benthic special map
@@ -425,7 +435,6 @@ benspemap <- reactive({
   
   # inputs
   benspedatsel <- benspedatsel()
-  benspemaploc <- isolate(benspemaploc())
 
   bbx <- as.numeric(sf::st_bbox(benptsyr))
 
@@ -446,26 +455,70 @@ benspemap <- reactive({
     ) %>%
     leaflet::fitBounds(lng1 = bbx[1], lat1 = bbx[2], lng2 = bbx[3], lat2 = bbx[4])
 
-  if(length(benspemaploc) != 0)
+  if(!is.null(benspemaploc) & is.null(benspezom)){
+    
     out <- out %>%
-      leaflet::setView(lng = benspemaploc$lng, lat = benspemaploc$lat, zoom = benspemaploc$zoom)
+      leaflet::fitBounds(lng1 = benspemaploc$lng1, lat1 = benspemaploc$lat1, lng2 = benspemaploc$lng2, lat2 = benspemaploc$lat2)
+    
+  }
 
+  if(!is.null(benspezom) & is.null(benspemaploc)){
+    
+    out <- out %>% 
+      leaflet::fitBounds(lng1 = benspezom[1], lat1 = benspezom[2], lng2 = benspezom[3], lat2 = benspezom[4])
+
+  }
+  
   return(out)
   
 })
 
 # benthic special dynamic location
-benspemaploc <- reactive({
-
-  if(is.null(input$benspemap_center))
-    return(list())
-
-  list(
-    zoom = input$benspemap_zoom,
-    lat = input$benspemap_center$lat,
-    lng = input$benspemap_center$lng
+makeReactiveBinding('benspemaploc')
+observeEvent(input$benspemap_bounds, {
+  
+  benspemaploc <<- list(
+    lng1 = input$benspemap_bounds$west,
+    lat1 = input$benspemap_bounds$south,
+    lng2 = input$benspemap_bounds$east,
+    lat2 = input$benspemap_bounds$north
   )
+  
+  benspezom <<- NULL
+  
+})
 
+# bbox for zoom to 
+sedspebbx <- reactive({
+  
+  # input
+  sedspedatsel <- sedspedatsel()
+  
+  # get bbox of sed input    
+  out <- sedspedatsel$dat %>% 
+    dplyr::select(Longitude, Latitude) %>% 
+    unique %>% 
+    sf::st_as_sf(coords = c('Longitude', 'Latitude'), crs = 4326) %>% 
+    sf::st_bbox() %>% 
+    as.numeric()
+  
+  return(out)
+  
+})
+
+# zoom to special sed
+makeReactiveBinding('sedspezom')
+makeReactiveBinding('benspezom')
+observeEvent(input$zoomto, {
+  
+  # input
+  sedspebbx <- sedspebbx()
+  
+  sedspezom <<- sedspebbx
+  benspezom <<- sedspebbx
+  benspemaploc <<- NULL
+  sedspemaploc <<- NULL
+  
 })
 
 # download data
@@ -959,8 +1012,11 @@ fillCol(flex = c(NA, 1),
         
       })
     ),
-    column(6,
+    column(3,
       textOutput('spedattxt')
+    ), 
+    column(3, 
+      actionButton("zoomto", "Zoom to features")
     )
   ),
   fillRow(
