@@ -396,21 +396,23 @@ sedspemap <- reactive({
     )
     
   }
-
+  
+  isolate({
   if(!is.null(sedspemaploc) & is.null(sedspezom)){
     
     out <- out %>%
       leaflet::fitBounds(lng1 = sedspemaploc$lng1, lat1 = sedspemaploc$lat1, lng2 = sedspemaploc$lng2, lat2 = sedspemaploc$lat2)
     
   }
+  })
 
-  if(!is.null(sedspezom) & is.null(sedspemaploc)){
+  if(!is.null(sedspezom) & isolate(is.null(sedspemaploc))){
     
     out <- out %>% 
       leaflet::fitBounds(lng1 = sedspezom[1], lat1 = sedspezom[2], lng2 = sedspezom[3], lat2 = sedspezom[4])
 
   }
-
+  
   return(out)
   
 })
@@ -455,14 +457,16 @@ benspemap <- reactive({
     ) %>%
     leaflet::fitBounds(lng1 = bbx[1], lat1 = bbx[2], lng2 = bbx[3], lat2 = bbx[4])
 
+  isolate({
   if(!is.null(benspemaploc) & is.null(benspezom)){
     
     out <- out %>%
       leaflet::fitBounds(lng1 = benspemaploc$lng1, lat1 = benspemaploc$lat1, lng2 = benspemaploc$lng2, lat2 = benspemaploc$lat2)
     
   }
+  })
 
-  if(!is.null(benspezom) & is.null(benspemaploc)){
+  if(!is.null(benspezom) & isolate(is.null(benspemaploc))){
     
     out <- out %>% 
       leaflet::fitBounds(lng1 = benspezom[1], lat1 = benspezom[2], lng2 = benspezom[3], lat2 = benspezom[4])
