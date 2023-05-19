@@ -68,7 +68,30 @@ prmlkup <- sedimentdata %>%
   select(SedResultsType, Parameter) %>%
   unique() %>%
   filter(SedResultsType %in% c('Metals', 'Organics') | grepl('TC|TIC|TOC', Parameter)) %>%
-  arrange(SedResultsType, Parameter)
+  arrange(SedResultsType, Parameter) %>%
+  mutate(
+    Parameter = factor(Parameter, levels = c("Aluminum", "Antimony", "Arsenic",
+      "Cadmium", "Chromium", "Copper",
+      "Iron", "Lead", "Manganese", "Mercury", "Nickel", "Selenium",
+      "Silver", "Tin", "Zinc", "Total Chlordane",
+      "Total DDT", "Total HMW PAH", "Total LMW PAH", "Total PAH", "Total PCB",
+      "1-Methylnaphthalene", "2-Methylnaphthalene",
+      "A BHC", "A Chlordane", "Acenaphthene", "Acenaphthylene", "Aldrin",
+      "Anthracene", "B BHC", "Benzo(a)anthracene", "Benzo(a)pyrene",
+      "Benzo(b)fluoranthene", "Benzo(g,h,i)perylene", "Benzo(k)fluoranthene",
+      "Chrysene", "Coronene", "D BHC", "DDD", "DDE", "DDT", "Dibenzo(a,h)anthracene",
+      "Dieldrin", "Endosulfan I", "Endosulfan II", "Endosulfan SO4",
+      "Endrin", "Endrin Aldehyde", "Endrin Ketone", "Fluoranthene",
+      "Fluorene", "G BHC", "G Chlordane", "Heptachlor", "Heptachlor Epoxide",
+      "Indeno(1,2,3-c,d)pyrene", "Methoxychlor", "Mirex", "Naphthalene",
+      "PCB 101", "PCB 1016", "PCB 105", "PCB 118", "PCB 1221", "PCB 1232",
+      "PCB 1242", "PCB 1248", "PCB 1254", "PCB 1260", "PCB 1262", "PCB 1268",
+      "PCB 128", "PCB 153", "PCB 170", "PCB 18", "PCB 180", "PCB 187",
+      "PCB 195", "PCB 206", "PCB 28", "PCB 44", "PCB 52", "PCB 66",
+      "PCB 8", "Phenanthrene", "Pyrene", "Retene",
+      "TC(Solids)", "TIC(Solids)", "TOC(Solids)")
+    )
+  )
 
 save(prmlkup, file = here('data/prmlkup.RData'))
 
