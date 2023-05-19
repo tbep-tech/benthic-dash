@@ -900,8 +900,10 @@ fillCol(flex = c(NA, 1),
         
         tosel <- prmlkup %>% 
           dplyr::filter(SedResultsType == typsel) %>% 
-          dplyr::pull(Parameter)
-        
+          dplyr::pull(Parameter) %>% 
+          sort() %>% 
+          as.character()
+
         selectInput('prmsel', 'Select parameter:', choices = tosel)
         
       })
@@ -1017,7 +1019,9 @@ fillCol(flex = c(NA, 1),
         
         tosel <- prmlkup %>% 
           dplyr::filter(SedResultsType == typsel2) %>% 
-          dplyr::pull(Parameter)
+          dplyr::pull(Parameter) %>% 
+          sort() %>% 
+          as.character()
         
         selectInput('prmsel2', 'Select parameter:', choices = tosel)
         
@@ -1061,7 +1065,9 @@ fillCol(flex =c(NA, 1, NA),
         
         tosel <- prmlkup %>% 
           dplyr::filter(SedResultsType == typseldl) %>% 
-          dplyr::pull(Parameter)
+          dplyr::pull(Parameter) %>% 
+          sort() %>% 
+          as.character()
         
         selectInput('prmseldl', 'Select parameter:', choices = tosel)
         
