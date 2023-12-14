@@ -6,7 +6,14 @@ library(leaflet)
 library(readxl)
 
 cols <- c('#CC3231', '#E9C318', '#2DC938')
-maxyr <- 2021
+maxyr <- 2022
+
+# sediment data -------------------------------------------------------------------------------
+
+# save sediment data so I don't have to rebuild image with tbeptools update
+data('sedimentdata', package = 'tbeptools')
+
+save(sedimentdata, file = here('data/sedimentdata.RData'))
 
 # tbbi scores ---------------------------------------------------------------------------------
 
@@ -107,6 +114,8 @@ save(tbbimat, file = here('data/tbbimat.RData'))
 
 # special study table -----------------------------------------------------
 
+# segment column is project description used to populate description column in shiny table
+# 2021 and 2022 piney point sampling description is modified below for completeness
 spedat <- read_excel('T:/09_TECHNICAL_PROJECTS/BENTHIC_MONITORING/Special_Study_Sites/Benthic_Special_Projects.xlsx') %>%
   mutate(
     Acronym = case_when(
@@ -116,6 +125,7 @@ spedat <- read_excel('T:/09_TECHNICAL_PROJECTS/BENTHIC_MONITORING/Special_Study_
     ),
     Segment = case_when(
       Segment == 'April & September' ~ 'Piney Point sampling, spring and fall',
+      Segment == 'Fall only' ~ 'Piney Point sampling, fall',
       T ~ Segment
     )
   ) %>%

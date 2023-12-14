@@ -20,9 +20,9 @@ box::use(
 
 cols <- c('#CC3231', '#E9C318', '#2DC938')
 
-maxyr <- 2021
+maxyr <- 2022
  
-data('sedimentdata', package = 'tbeptools')
+load(file = 'data/sedimentdata.RData')
 load(file = 'data/tbbiscr.RData')
 load(file = 'data/benpts.RData')
 load(file = 'data/benmed.RData')
