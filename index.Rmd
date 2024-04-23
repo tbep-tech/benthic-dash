@@ -50,7 +50,7 @@ benmat <- reactive({
     ggplot2::geom_hline(yintercept = yrsel1 + 0.5, lwd = lwid) + 
     ggplot2::geom_segment(ggplot2::aes(x = 0.5, xend = 0.5, y = yrsel1 - 0.5, yend = yrsel1 + 0.5, lwd = lwid)) +
     ggplot2::geom_segment(ggplot2::aes(x = 9.5, xend = 9.5, y = yrsel1 - 0.5, yend = yrsel1 + 0.5, lwd = lwid))
-  
+
   out <- tbeptools::show_matrixplotly(p, tooltip = 'Action')
   
   return(out)
