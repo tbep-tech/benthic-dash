@@ -6,7 +6,7 @@ library(leaflet)
 library(readxl)
 
 cols <- c('#CC3231', '#E9C318', '#2DC938')
-maxyr <- 2022
+maxyr <- 2023
 
 # sediment data -------------------------------------------------------------------------------
 
