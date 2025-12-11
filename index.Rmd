@@ -20,7 +20,7 @@ box::use(
 
 cols <- c('#CC3231', '#E9C318', '#2DC938')
 
-maxyr <- 2023
+maxyr <- 2024
  
 load(file = 'data/sedimentdata.RData')
 load(file = 'data/tbbiscr.RData')

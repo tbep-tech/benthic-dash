@@ -6,11 +6,11 @@ library(leaflet)
 library(readxl)
 
 cols <- c('#CC3231', '#E9C318', '#2DC938')
-maxyr <- 2023
+maxyr <- 2024
 
 # sediment data -------------------------------------------------------------------------------
 
-# save sediment data so I don't have to rebuild image with tbeptools update
+# add sediment data so I don't have to rebuild image with tbeptools update
 data('sedimentdata', package = 'tbeptools')
 
 save(sedimentdata, file = here('data/sedimentdata.RData'))
