@@ -55,12 +55,16 @@ save(benmed, file = here('data/benmed.RData'))
 benpts <- tbbiscr %>%
   filter(ProgramName %in% c('Benthic Monitoring')) %>%
   filter(TBBICat != 'Empty Sample') %>%
-  filter(AreaAbbr %in% c("HB", "OTB", "MTB", "LTB", "TCB", "MR", "BCB")) %>%
+  filter(AreaAbbr %in% c("HB", "OTB", "MTB", "LTB", "TCB", "MR", "BCB", "MCB", "PR")) %>%
   mutate(
     outcome = case_when(
       TBBICat == 'Healthy' ~ cols[3],
       TBBICat == 'Intermediate' ~ cols[2],
       TBBICat == 'Degraded' ~ cols[1]
+    ), 
+    AreaAbbr = case_when(
+      AreaAbbr %in% c("MCB", "PR") ~ "HB",
+      T ~ AreaAbbr
     )
   ) %>%
   sf::st_as_sf(coords = c('Longitude', 'Latitude'), crs = 4326)
@@ -172,7 +176,7 @@ sedspedat <- sedimentdata %>%
       T ~ Acronym
     ),
     AreaAbbr = case_when(
-      AreaAbbr == 'MCB' ~ 'HB',
+      AreaAbbr %in% c('MCB', 'PR') ~ 'HB',
       T ~ AreaAbbr
     )
   ) %>%
