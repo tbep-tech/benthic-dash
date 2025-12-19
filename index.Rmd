@@ -681,7 +681,7 @@ Benthic data provide critical information on the health of organisms that live i
 
 #### Benthic index
 
-The TBBI provides an estimate of the health of benthic communities in Tampa Bay. The TBBI is scaled from 0-100 with values <73 classified as <span style="color:#CC3231">__Degraded__</span>, from 73-87 as <span style="color:#E9C318">__Intermediate__</span>, and >87 as <span style="color:#2DC938">__Healthy__</span>. These classifications are assigned to individual sampling stations in Tampa Bay. Collectively, bay segments are assigned to categories of <span style="color:#CC3231">__Poor__</span>, <span style="color:#E9C318">__Fair__</span>, and <span style="color:#2DC938">__Good__</span> based on the distribution of classifications across all stations in each segment. This information provides a general summary of benthic community health across the bay.  These results are shown on the [__TAMPA BAY BENTHIC INDEX__](#tampa-bay-benthic-index) tab. 
+The TBBI provides an estimate of the health of benthic communities in Tampa Bay. The TBBI is scaled from 0-100 with values <73 classified as <span style="color:#CC3231">__Degraded__</span>, from 73-87 as <span style="color:#E9C318">__Intermediate__</span>, and >87 as <span style="color:#2DC938">__Healthy__</span>. These classifications are assigned to individual sampling stations in Tampa Bay. Collectively, bay segments are assigned to categories of <span style="color:#CC3231">__Poor__</span>, <span style="color:#E9C318">__Fair__</span>, and <span style="color:#2DC938">__Good__</span> based on the distribution of classifications across all stations in each segment. Bay segment results are based on a five-year rolling assessment starting from 2005 to account for reduced sampling effort. This information provides a general summary of benthic community health across the bay.  These results are shown on the [__TAMPA BAY BENTHIC INDEX__](#tampa-bay-benthic-index) tab. 
 
 #### Contaminant data
 
@@ -719,7 +719,7 @@ plotly::plotlyOutput('benmat')
 
 This tab shows the overall assessment of Tampa Bay Benthic Index (TBBI) scores for each bay segment across all years when data were available. The TBBI provides an estimate of the health of benthic communities in Tampa Bay. The TBBI is scaled from 0-100 with values <73 classified as <span style="color:#CC3231">__Degraded__</span>, from 73-87 as <span style="color:#E9C318">__Intermediate__</span>, and >87 as <span style="color:#2DC938">__Healthy__</span>. These classifications are assigned to individual sampling stations in Tampa Bay. Collectively, bay segments are assigned to categories of <span style="color:#CC3231">__Poor__</span>, <span style="color:#E9C318">__Fair__</span>, and <span style="color:#2DC938">__Good__</span> based on the distribution of classifications across all stations in each segment. 
 
-The __MATRIX RESULTS__ show the TBBI scores each year for each segment, which are based on the distribution of site scores in each segment. The black rectangle shows the selected year from the year slider above the map. The bay segments shown at the top of the matrix are as follows:
+The __MATRIX RESULTS__ show the TBBI scores each year for each segment, which are based on the distribution of site scores in each segment. Bay segment results are based on a five-year rolling assessment starting from 2005 to account for reduced sampling effort. The black rectangle shows the selected year from the year slider above the map. The bay segments shown at the top of the matrix are as follows:
 
 * __OTB__: Old Tampa Bay
 * __HB__: Hillsborough Bay
@@ -859,7 +859,7 @@ knitr::include_graphics('www/pelsumex.PNG')
 ```
 <br>
 
-The __METAL:ALUMINUM RATIO__ tab shows a plot of concentrations for a selected metal parameter against aluminum concentrations. Aluminum is a common metal in sediments and showing the ratio of a contaminant to aluminum provides a comparison relative to background concentrations. The black lines show the linear fit of a log-log model and the 95% prediction intervals.  Lines for the TEL/PEL values for the selected contaminant are shown, if available, and the points are colored and keyed by bay segment.  Points by bay segment can be turned off or on by clicking the legend item. Placing the cursor over a point on the plot will show additional information. 
+The __METAL:ALUMINUM RATIO__ tab shows a plot of concentrations for a selected metal parameter against aluminum concentrations. Aluminum is a common metal in sediments and showing the ratio of a contaminant to aluminum provides a comparison relative to background concentrations. The black lines show the linear fit of a log-log model and the 95% prediction intervals.  Lines for the TEL/PEL values for the selected contaminant are shown, if available, and the points are colored and keyed by bay segment. Metal concentrations for the points in each bay segment that are above the confidence intervals from the black ratio line can be considered higher than "normal" given background aluminum concentrations.  Points that are above the confidence interval and the TEL/PEL values are of particular note.  Points by bay segment can be turned off or on by clicking the legend item. Placing the cursor over a point on the plot will show additional information. 
 
 <br>
 ```{r, out.width='30%', fig.align='center'}
