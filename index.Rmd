@@ -14,14 +14,10 @@ css: styles.css
 ```{r setup, include=F}
 knitr::opts_chunk$set(echo = F, message = F, warning = F)
 
-box::use(
-  dplyr[`%>%`]
-)
+library(dplyr)
 
-cols <- c('#CC3231', '#E9C318', '#2DC938')
+source('R/funcs.R')
 
-maxyr <- 2024
- 
 load(file = 'data/sedimentdata.RData')
 load(file = 'data/tbbiscr.RData')
 load(file = 'data/benpts.RData')
@@ -33,6 +29,8 @@ load(file = 'data/spedat.RData')
 load(file = 'data/pelsum.RData')
 load(file = 'data/benspedat.RData')
 load(file = 'data/sedspedat.RData')
+
+benptsyr <- benpts %>% dplyr::filter(yr == maxyr)
 ```
 
 ```{r reactives}
@@ -164,7 +162,9 @@ sedmap <- reactive({
   typsel <- input$typsel
   prmsel <- input$prmsel
   yrsel2 <- input$yrsel2
-  sedmaploc <- isolate(sedmaploc()) # fucking important!
+  # isolate() breaks the cycle: sedmap renders -> fires sedmap_center -> updates
+  # sedmaploc() -> would re-trigger sedmap. Reading isolated avoids the loop.
+  sedmaploc <- isolate(sedmaploc())
   
   if(typsel == 'PEL summary'){
     
@@ -398,38 +398,21 @@ sedspemap <- reactive({
   }
   
   isolate({
-  if(!is.null(sedspemaploc) & is.null(sedspezom)){
-    
-    out <- out %>%
-      leaflet::fitBounds(lng1 = sedspemaploc$lng1, lat1 = sedspemaploc$lat1, lng2 = sedspemaploc$lng2, lat2 = sedspemaploc$lat2)
-    
-  }
+    sedspemaploc_val <- mapLocs$sedspemaploc
+    if(!is.null(sedspemaploc_val) & is.null(mapLocs$sedspezom)){
+      out <- out %>%
+        leaflet::fitBounds(lng1 = sedspemaploc_val$lng1, lat1 = sedspemaploc_val$lat1, lng2 = sedspemaploc_val$lng2, lat2 = sedspemaploc_val$lat2)
+    }
   })
 
-  if(!is.null(sedspezom) & isolate(is.null(sedspemaploc))){
-    
-    out <- out %>% 
-      leaflet::fitBounds(lng1 = sedspezom[1], lat1 = sedspezom[2], lng2 = sedspezom[3], lat2 = sedspezom[4])
-
+  sedspezom_val <- mapLocs$sedspezom
+  if(!is.null(sedspezom_val) & isolate(is.null(mapLocs$sedspemaploc))){
+    out <- out %>%
+      leaflet::fitBounds(lng1 = sedspezom_val[1], lat1 = sedspezom_val[2], lng2 = sedspezom_val[3], lat2 = sedspezom_val[4])
   }
-  
+
   return(out)
-  
-})
 
-# sediment special dynamic location
-makeReactiveBinding('sedspemaploc')
-observeEvent(input$sedspemap_bounds, {
-
-  sedspemaploc <<- list(
-    lng1 = input$sedspemap_bounds$west,
-    lat1 = input$sedspemap_bounds$south,
-    lng2 = input$sedspemap_bounds$east,
-    lat2 = input$sedspemap_bounds$north
-  )
-  
-  sedspezom <<- NULL
-  
 })
 
 # benthic special map
@@ -458,41 +441,52 @@ benspemap <- reactive({
     leaflet::fitBounds(lng1 = bbx[1], lat1 = bbx[2], lng2 = bbx[3], lat2 = bbx[4])
 
   isolate({
-  if(!is.null(benspemaploc) & is.null(benspezom)){
-    
-    out <- out %>%
-      leaflet::fitBounds(lng1 = benspemaploc$lng1, lat1 = benspemaploc$lat1, lng2 = benspemaploc$lng2, lat2 = benspemaploc$lat2)
-    
-  }
+    benspemaploc_val <- mapLocs$benspemaploc
+    if(!is.null(benspemaploc_val) & is.null(mapLocs$benspezom)){
+      out <- out %>%
+        leaflet::fitBounds(lng1 = benspemaploc_val$lng1, lat1 = benspemaploc_val$lat1, lng2 = benspemaploc_val$lng2, lat2 = benspemaploc_val$lat2)
+    }
   })
 
-  if(!is.null(benspezom) & isolate(is.null(benspemaploc))){
-    
-    out <- out %>% 
-      leaflet::fitBounds(lng1 = benspezom[1], lat1 = benspezom[2], lng2 = benspezom[3], lat2 = benspezom[4])
-
+  benspezom_val <- mapLocs$benspezom
+  if(!is.null(benspezom_val) & isolate(is.null(mapLocs$benspemaploc))){
+    out <- out %>%
+      leaflet::fitBounds(lng1 = benspezom_val[1], lat1 = benspezom_val[2], lng2 = benspezom_val[3], lat2 = benspezom_val[4])
   }
-  
+
   return(out)
-  
+
 })
 
-# benthic special dynamic location
-makeReactiveBinding('benspemaploc')
+# shared reactive state for special study map pan/zoom positions
+mapLocs <- reactiveValues(
+  sedspemaploc = NULL,
+  benspemaploc = NULL,
+  sedspezom    = NULL,
+  benspezom    = NULL
+)
+
+observeEvent(input$sedspemap_bounds, {
+  mapLocs$sedspemaploc <- list(
+    lng1 = input$sedspemap_bounds$west,
+    lat1 = input$sedspemap_bounds$south,
+    lng2 = input$sedspemap_bounds$east,
+    lat2 = input$sedspemap_bounds$north
+  )
+  mapLocs$sedspezom <- NULL
+})
+
 observeEvent(input$benspemap_bounds, {
-  
-  benspemaploc <<- list(
+  mapLocs$benspemaploc <- list(
     lng1 = input$benspemap_bounds$west,
     lat1 = input$benspemap_bounds$south,
     lng2 = input$benspemap_bounds$east,
     lat2 = input$benspemap_bounds$north
   )
-  
-  benspezom <<- NULL
-  
+  mapLocs$benspezom <- NULL
 })
 
-# bbox for zoom to 
+# bbox for zoom to
 sedspebbx <- reactive({
   
   # input
@@ -517,19 +511,12 @@ sedspebbx <- reactive({
   
 })
 
-# zoom to special sed
-makeReactiveBinding('sedspezom')
-makeReactiveBinding('benspezom')
 observeEvent(input$zoomto, {
-  
-  # input
-  sedspebbx <- sedspebbx()
-  
-  sedspezom <<- sedspebbx
-  benspezom <<- sedspebbx
-  benspemaploc <<- NULL
-  sedspemaploc <<- NULL
-  
+  sedspebbx_val <- sedspebbx()
+  mapLocs$sedspezom    <- sedspebbx_val
+  mapLocs$benspezom    <- sedspebbx_val
+  mapLocs$benspemaploc <- NULL
+  mapLocs$sedspemaploc <- NULL
 })
 
 # download data
@@ -539,27 +526,23 @@ dldat <- reactive({
   prmseldl <- input$prmseldl
   yrseldl <- input$yrseldl
   
-  out <- NULL
-  
-  if(typseldl == 'TBBI bay segment')
-    out <- benmed %>% 
-      dplyr::select(-outcome)
-  
-  if(typseldl ==  'TBBI stations')
-    out <- tbbiscr %>% 
-      dplyr::select(-ProgramID) %>% 
-      dplyr::filter(AreaAbbr %in% c("OTB", "HB", "MTB", "LTB", "TCB", "MR", "BCB"))
-
-  if(typseldl == 'PEL summary')
-    out <- pelsum
-
-  if(!typseldl %in% c('TBBI bay segment', 'TBBI stations', 'PEL summary') & !is.null(prmseldl))
-    out <- sedimentdata %>% 
-      tbeptools::anlz_sedimentaddtot(pelave = FALSE) %>% 
-      dplyr::filter(Parameter == prmseldl) %>% 
-      dplyr::select(-MDLnum, -PQLnum, -ProgramId, -BetweenTELPEL, -ExceedsPEL, -PELRatio, -PreparationDate, -AnalysisTimeMerge, -SedResultsType) %>% 
-      dplyr::filter(AreaAbbr %in% c("OTB", "HB", "MTB", "LTB", "TCB", "MR", "BCB")) %>% 
-      dplyr::arrange(yr, StationID)
+  out <- switch(typseldl,
+    'TBBI bay segment' = benmed %>%
+      dplyr::select(-outcome),
+    'TBBI stations' = tbbiscr %>%
+      dplyr::select(-ProgramID) %>%
+      dplyr::filter(AreaAbbr %in% c("OTB", "HB", "MTB", "LTB", "TCB", "MR", "BCB")),
+    'PEL summary' = pelsum,
+    {
+      req(prmseldl)
+      sedimentdata %>%
+        tbeptools::anlz_sedimentaddtot(pelave = FALSE) %>%
+        dplyr::filter(Parameter == prmseldl) %>%
+        dplyr::select(-MDLnum, -PQLnum, -ProgramId, -BetweenTELPEL, -ExceedsPEL, -PELRatio, -PreparationDate, -AnalysisTimeMerge, -SedResultsType) %>%
+        dplyr::filter(AreaAbbr %in% c("OTB", "HB", "MTB", "LTB", "TCB", "MR", "BCB")) %>%
+        dplyr::arrange(yr, StationID)
+    }
+  )
 
   req(!is.null(out))
   
@@ -767,8 +750,6 @@ tbbiscryr <- tbbiscr %>%
 benmedyr <- benmed %>%
   dplyr::filter(yr == maxyr) %>%
   dplyr::inner_join(segs, ., by = 'bay_segment')
-benptsyr <- benpts %>%
-  dplyr::filter(yr == maxyr)
 
 # benmapbs
 benmapbs <- mapview::mapView(map.types = mapview::mapviewGetOption("basemaps")) %>%
@@ -891,22 +872,8 @@ fillCol(flex = c(NA, 1),
     column(3, 
       selectInput('typsel', 'Select type:', choices = c('PEL summary', c(unique(prmlkup$SedResultsType))))
     ),
-    column(3, 
-      renderUI({
-        typsel <- input$typsel
-        
-        req(typsel)
-        req(typsel != 'PEL summary')
-        
-        tosel <- prmlkup %>% 
-          dplyr::filter(SedResultsType == typsel) %>% 
-          dplyr::pull(Parameter) %>% 
-          sort() %>% 
-          as.character()
-
-        selectInput('prmsel', 'Select parameter:', choices = tosel)
-        
-      })
+    column(3,
+      param_selector_ui(input, 'typsel', 'prmsel', prmlkup)
     ),
     column(6,
       sliderInput('yrsel2', 'Select year range:', min = 1993, max = maxyr, value = c(1993, maxyr), step = 1, sep = '', width = '200%'),
@@ -1010,22 +977,8 @@ fillCol(flex = c(NA, 1),
     column(3, 
       selectInput('typsel2', 'Select type:', choices = c('PEL summary', c(unique(prmlkup$SedResultsType))))
     ),
-    column(3, 
-      renderUI({
-        typsel2 <- input$typsel2
-        
-        req(typsel2)
-        req(typsel2 != 'PEL summary')
-        
-        tosel <- prmlkup %>% 
-          dplyr::filter(SedResultsType == typsel2) %>% 
-          dplyr::pull(Parameter) %>% 
-          sort() %>% 
-          as.character()
-        
-        selectInput('prmsel2', 'Select parameter:', choices = tosel)
-        
-      })
+    column(3,
+      param_selector_ui(input, 'typsel2', 'prmsel2', prmlkup)
     ),
     column(3,
       textOutput('spedattxt')
@@ -1056,22 +1009,9 @@ fillCol(flex =c(NA, 1, NA),
     column(3, 
       selectInput('typseldl', 'Select type:', choices = c('TBBI bay segment', 'TBBI stations', 'PEL summary', c(unique(prmlkup$SedResultsType))))
     ),
-    column(3, 
-      renderUI({
-        typseldl <- input$typseldl
-        
-        req(typseldl)
-        req(!typseldl %in% c('TBBI bay segment', 'TBBI stations', 'PEL summary'))
-        
-        tosel <- prmlkup %>% 
-          dplyr::filter(SedResultsType == typseldl) %>% 
-          dplyr::pull(Parameter) %>% 
-          sort() %>% 
-          as.character()
-        
-        selectInput('prmseldl', 'Select parameter:', choices = tosel)
-        
-      })
+    column(3,
+      param_selector_ui(input, 'typseldl', 'prmseldl', prmlkup,
+                        exclude = c('TBBI bay segment', 'TBBI stations', 'PEL summary'))
     ),
     column(6,
       sliderInput('yrseldl', 'Select year range:', min = 1993, max = maxyr, value = c(1993, maxyr), step = 1, sep = '', width = '200%')

@@ -4,7 +4,7 @@
 
 Materials for the Tampa Bay benthic data dashboard.
 
-## Annual udpate
+## Annual update
 
 1. Benthic and sediment data are provided to TBEP by EPC typically in December.  Note that the updated year will lag the current year. Update the files in [tbeptools](https://github.com/tbep-tech/tbeptools) with these data. 
     - `R/benthicdata.R`, run examples to update `R/benthicdata.RData` and update Roxygen with date of update (may need to change some column names in `R/read_formbenthic.R`)
@@ -14,7 +14,7 @@ Materials for the Tampa Bay benthic data dashboard.
     - Update dates in `vignettes/tbbi.Rmd`
     - Update date/version `DESCRIPTION` file
     - Commit and push changes to GitHub
-1. Reinstall tbeptools locally and update `maxyr` in `R/dat_proc.R` and `maxyr` in `index.Rmd` in this repository
+1. Reinstall tbeptools locally and update `maxyr` in `R/funcs.R` in this repository
     - Source `R/dat_proc.R` to update datasets.  This should update all files in `data/` folder excluding `data/segmask.Rdata`.
     - Commit and push changes to GitHub
     - Log on to TBEP server and pull changes to benthic-dash repository

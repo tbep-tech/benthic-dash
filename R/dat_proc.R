@@ -5,8 +5,7 @@ library(sf)
 library(leaflet)
 library(readxl)
 
-cols <- c('#CC3231', '#E9C318', '#2DC938')
-maxyr <- 2024
+source(here('R/funcs.R'))
 
 # sediment data -------------------------------------------------------------------------------
 
@@ -160,58 +159,26 @@ save(spedat, file = here('data/spedat.RData'))
 
 sedspedat <- sedimentdata %>%
   filter(FundingProject == 'TBEP-Special') %>%
+  fix_acronym() %>%
   mutate(
-    Acronym = regmatches(StationNumber, regexpr('([a-zA-Z]+)', StationNumber)),
-    Acronym = ifelse(Acronym %in% c('PPf', 'PPs'), 'PP', Acronym),
-    Acronym = case_when(
-      Acronym == 'CRB' & yr == 2003 ~ 'LBE',
-      Acronym == 'CH' ~ 'CH5',
-      Acronym == 'FDE' ~ 'FD-E',
-      Acronym == 'FDW' ~ 'FD-W',
-      Acronym == 'CPB' ~ 'CBSS',
-      Acronym %in% c('BCB', 'LTB', 'MTB', 'OTB') & yr == 2018 ~ 'MicPla',
-      Acronym == 'HB' & StationNumber == '18HB07' ~ 'MicPla',
-      Acronym == 'HB' & StationNumber %in% c(paste0('18HB0', c(1:6))) ~ 'OyRest',
-      Acronym == 'MR' ~ 'MROyster',
-      T ~ Acronym
-    ),
     AreaAbbr = case_when(
       AreaAbbr %in% c('MCB', 'PR') ~ 'HB',
       T ~ AreaAbbr
     )
-  ) %>%
-  filter(!(yr == 2002 & Acronym == 'DHB')) %>% # no record of these sites
-  filter(!(yr == 2011 & Acronym == 'BC')) %>% # no record of these sites
-  filter(!(yr == 2011 & Acronym == 'MC')) # no record of these sites
+  )
 
 # only used for the map, preprocessed above
 load(file = here('data/benpts.RData'))
 
 benspedat <- benpts %>%
   filter(FundingProject == 'TBEP-Special') %>%
+  fix_acronym() %>%
   mutate(
-    Acronym = regmatches(StationNumber, regexpr('([a-zA-Z]+)', StationNumber)),
-    Acronym = ifelse(Acronym %in% c('PPf', 'PPs'), 'PP', Acronym),
-    Acronym = case_when(
-      Acronym == 'CRB' & yr == 2003 ~ 'LBE',
-      Acronym == 'CH' ~ 'CH5',
-      Acronym == 'FDE' ~ 'FD-E',
-      Acronym == 'FDW' ~ 'FD-W',
-      Acronym == 'CPB' ~ 'CBSS',
-      Acronym %in% c('BCB', 'LTB', 'MTB', 'OTB') & yr == 2018 ~ 'MicPla',
-      Acronym == 'HB' & StationNumber == '18HB07' ~ 'MicPla',
-      Acronym == 'HB' & StationNumber %in% c(paste0('18HB0', c(1:6))) ~ 'OyRest',
-      Acronym == 'MR' ~ 'MROyster',
-      T ~ Acronym
-    ),
     AreaAbbr = case_when(
       AreaAbbr == 'MCB' ~ 'HB',
       T ~ AreaAbbr
     )
-  ) %>%
-  filter(!(yr == 2002 & Acronym == 'DHB')) %>% # no record of these sites
-  filter(!(yr == 2011 & Acronym == 'BC')) %>% # no record of these sites
-  filter(!(yr == 2011 & Acronym == 'MC')) # no record of these sites
+  )
 
 save(sedspedat, file = here('data/sedspedat.RData'))
 save(benspedat, file = here('data/benspedat.RData'))
