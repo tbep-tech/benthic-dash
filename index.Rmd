@@ -29,6 +29,14 @@ load(file = 'data/spedat.RData')
 load(file = 'data/pelsum.RData')
 load(file = 'data/benspedat.RData')
 load(file = 'data/sedspedat.RData')
+load(file = 'data/ambiscr.RData')
+load(file = 'data/ambiscr_tb.RData')
+load(file = 'data/ambipts.RData')
+load(file = 'data/ambipts_tb.RData')
+load(file = 'data/ambimed.RData')
+load(file = 'data/ambimed_tb.RData')
+load(file = 'data/ambimat.RData')
+load(file = 'data/ambimat_tb.RData')
 load(file = 'data/sedplo_default.RData')
 load(file = 'data/sedmap_default.RData')
 
@@ -102,7 +110,82 @@ observe({
       radius= 4,
       label = ~paste0('StationNumber ', StationNumber, ', TBBI: ', round(TBBI, 1), ', Category: ', TBBICat)
     )
-  
+
+})
+
+# AMBI matrix
+ambimat_react <- reactive({
+
+  yrsel_ambi <- input$yrsel_ambi
+  ambi_type  <- input$ambi_type
+
+  lwid <- 1.5
+  base_mat <- if(ambi_type == 'AMBI-TB') ambimat_tb else ambimat
+
+  p <- base_mat +
+    ggplot2::geom_hline(yintercept = yrsel_ambi - 0.5, lwd = lwid) +
+    ggplot2::geom_hline(yintercept = yrsel_ambi + 0.5, lwd = lwid) +
+    ggplot2::geom_segment(ggplot2::aes(x = 0.5, xend = 0.5, y = yrsel_ambi - 0.5, yend = yrsel_ambi + 0.5, lwd = lwid)) +
+    ggplot2::geom_segment(ggplot2::aes(x = 8.5, xend = 8.5, y = yrsel_ambi - 0.5, yend = yrsel_ambi + 0.5, lwd = lwid))
+
+  tbeptools::show_matrixplotly(p, tooltip = 'Action')
+
+})
+
+ambimap_proxy <- leaflet::leafletProxy('ambimap')
+
+# AMBI index map
+observe({
+
+  yrsel_ambi <- input$yrsel_ambi
+  ambi_type  <- input$ambi_type
+  req(yrsel_ambi)
+
+  pts_dat <- if(ambi_type == 'AMBI-TB') ambipts_tb else ambipts
+  pol_dat <- if(ambi_type == 'AMBI-TB') ambimed_tb  else ambimed
+
+  ambipol <- pol_dat %>%
+    dplyr::filter(yr == yrsel_ambi) %>%
+    dplyr::inner_join(segs, ., by = 'bay_segment')
+
+  ambipts_yr <- pts_dat %>%
+    dplyr::filter(yr == yrsel_ambi) %>%
+    dplyr::filter(FundingProject == 'TBEP')
+
+  ambimap_proxy %>%
+    leaflet::clearMarkers() %>%
+    leaflet::clearShapes() %>%
+    leaflet::addPolygons(
+      data = ambipol,
+      stroke = T,
+      color = 'grey',
+      weight = 1,
+      layerId = ~bay_segment,
+      fillColor = ~outcome,
+      fillOpacity = 0.3,
+      label = ~paste0(bay_segment, ': ', long_name, ', AMBI: ', AMBICat)
+    ) %>%
+    leaflet::addCircleMarkers(
+      data = ambipts_yr,
+      layerId = ~StationID,
+      stroke = TRUE,
+      color = 'black',
+      fill = TRUE,
+      fillColor = ~outcome,
+      weight = 1,
+      fillOpacity = 1,
+      radius = 4,
+      label = ~paste0('StationNumber ', StationNumber, ', AMBI: ', round(AMBI, 1), ', Category: ', AMBICat)
+    )
+
+})
+
+# AMBI summary table
+ambitab_react <- reactive({
+  yrsel_ambi <- input$yrsel_ambi
+  ambi_type  <- input$ambi_type
+  dat <- if(ambi_type == 'AMBI-TB') ambiscr_tb else ambiscr
+  tbeptools::show_ambitab(dat, yrrng = c(yrsel_ambi, yrsel_ambi))
 })
 
 # sediment plot
@@ -797,7 +880,123 @@ fillCol(flex = c(NA, 1),
 )
 ```
 
-2 SEDIMENT CONTAMINANTS {data-navmenu="PAGE SELECTION"}
+2 AMBI {data-navmenu="PAGE SELECTION"}
+===========================================================
+
+Column {.tabset .tabset-fade data-width=275}
+-----------------------------------------------------------------------
+
+### MATRIX RESULTS
+
+```{r}
+output$ambimat <- plotly::renderPlotly(ambimat_react())
+plotly::plotlyOutput('ambimat')
+```
+
+### TREND PLOT
+
+```{r}
+output$ambitrend <- plotly::renderPlotly(
+  tbeptools::show_ambitrend(ambiscr, ambiscr_tb, plotly = TRUE)
+)
+plotly::plotlyOutput('ambitrend')
+```
+
+### SUMMARY TABLE
+
+```{r}
+output$ambitab <- renderUI({
+  ft <- ambitab_react()
+  htmltools::HTML(flextable::htmltools_value(ft))
+})
+uiOutput('ambitab')
+```
+
+### Using this tab
+
+This tab shows the AZTI Marine Biotic Index (AMBI) for benthic communities sampled across Tampa Bay. The AMBI is an index of ecological quality based on the sensitivity of taxa to pollution, ranging from 0 to 10 where higher values indicate healthier conditions. Individual station scores are assigned to one of five categories:
+
+* <span style="color:#CC3231">__Extremely Polluted__</span>: AMBI score < 1.39
+* <span style="color:#E07B39">__Heavily Polluted__</span>: AMBI score 1.39 – 2.89
+* <span style="color:#E9C318">__Meanly Polluted__</span>: AMBI score 2.89 – 5.29
+* <span style="color:#8DBE68">__Slightly Polluted__</span>: AMBI score 5.29 – 8.29
+* <span style="color:#2DC938">__Unpolluted__</span>: AMBI score > 8.29
+
+Two variants of the index are available. The __AMBI__ variant uses ecological group assignments from Gillett et al. (2015) developed for the Gulf of Mexico. The __AMBI-TB__ variant uses Tampa Bay-specific ecological group assignments calibrated for local conditions. The variant selector above the map controls which scores are shown in the __MATRIX RESULTS__, __SUMMARY TABLE__, and map. The __TREND PLOT__ always shows both variants together for comparison.
+
+The __MATRIX RESULTS__ show the dominant AMBI category per bay segment and year, based on the distribution of station scores. Bay segment results use a five-year rolling assessment starting from 2005. The selected year is highlighted with a black rectangle. Bay segments shown are:
+
+* __OTB__: Old Tampa Bay
+* __HB__: Hillsborough Bay
+* __MTB__: Middle Tampa Bay
+* __LTB__: Lower Tampa Bay
+* __TCB__: Terra Ceia Bay
+* __MR__: Manatee River
+* __BCB__: Boca Ciega Bay
+
+The __TREND PLOT__ shows mean annual AMBI scores by bay segment over time, with colored background zones corresponding to the five pollution categories. The __SUMMARY TABLE__ shows the percentage of stations in each category per bay segment for the selected year.
+
+The __MAP SUMMARY__ on the right shows segment polygons shaded by dominant AMBI category and individual station scores as colored points for the selected year.
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### MAP SUMMARY
+
+```{r}
+ambimapbs_pol <- ambimed_tb %>%
+  dplyr::filter(yr == maxyr) %>%
+  dplyr::inner_join(segs, ., by = 'bay_segment')
+
+ambimapbs_pts <- ambipts_tb %>%
+  dplyr::filter(yr == maxyr) %>%
+  dplyr::filter(FundingProject == 'TBEP')
+
+ambimapbs <- base_leaflet() %>%
+  leaflet::fitBounds(lng1 = bbx[1], lng2 = bbx[3], lat1 = bbx[2], lat2 = bbx[4]) %>%
+  leaflet::addLegend("topright",
+    labels = names(ambi_cols),
+    colors = unname(ambi_cols),
+    title = "AMBI Category", opacity = 1
+  ) %>%
+  leaflet::addPolygons(
+    data = ambimapbs_pol,
+    stroke = T,
+    color = 'grey',
+    weight = 1,
+    layerId = ~bay_segment,
+    fillColor = ~outcome,
+    fillOpacity = 0.3,
+    label = ~paste0(bay_segment, ': ', long_name, ', AMBI: ', AMBICat)
+  ) %>%
+  leaflet::addCircleMarkers(
+    data = ambimapbs_pts,
+    layerId = ~StationID,
+    stroke = TRUE,
+    color = 'black',
+    fill = TRUE,
+    fillColor = ~outcome,
+    weight = 1,
+    fillOpacity = 1,
+    radius = 4,
+    label = ~paste0('StationNumber ', StationNumber, ', AMBI: ', round(AMBI, 1), ', Category: ', AMBICat)
+  )
+output$ambimap <- leaflet::renderLeaflet(ambimapbs)
+
+fillCol(flex = c(NA, 1),
+  column(12,
+    column(6,
+      sliderInput('yrsel_ambi', 'Select year:', min = 1993, max = maxyr, value = maxyr, step = 1, sep = '', width = '200%', animate = T)
+    ),
+    column(3,
+      selectInput('ambi_type', 'Select variant:', choices = c('AMBI-TB', 'AMBI'))
+    )
+  ),
+  leaflet::leafletOutput('ambimap')
+)
+```
+
+3 SEDIMENT CONTAMINANTS {data-navmenu="PAGE SELECTION"}
 ===========================================================
 
 Column {.tabset .tabset-fade data-width=275}
@@ -889,7 +1088,7 @@ fillCol(flex = c(NA, 1),
 )
 ```
 
-3 SPECIAL STUDY SITES {data-navmenu="PAGE SELECTION"}
+4 SPECIAL STUDY SITES {data-navmenu="PAGE SELECTION"}
 ===========================================================
 
 Column {.tabset .tabset-fade data-width=275}
@@ -1000,7 +1199,7 @@ fillCol(flex = c(NA, 1),
 )
 ```
 
-4 DATA DOWNLOADS {data-navmenu="PAGE SELECTION"}
+5 DATA DOWNLOADS {data-navmenu="PAGE SELECTION"}
 ===========================================================
 
 Column {.tabset .tabset-fade data-width=650}

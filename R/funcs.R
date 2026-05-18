@@ -1,6 +1,30 @@
 cols <- c('#CC3231', '#E9C318', '#2DC938')
 maxyr <- 2024
 
+ambi_cols <- c(
+  'Extremely Polluted' = '#CC3231',
+  'Heavily Polluted'   = '#E07B39',
+  'Meanly Polluted'    = '#E9C318',
+  'Slightly Polluted'  = '#8DBE68',
+  'Unpolluted'         = '#2DC938'
+)
+
+# Derives the dominant AMBI category per segment/year from anlz_ambimed() output
+# and appends an outcome hex-color column for leaflet polygon shading.
+add_dominant_cat <- function(ambimed_dat) {
+  ambimed_dat |>
+    tidyr::pivot_longer(
+      cols = c('Extremely Polluted', 'Heavily Polluted', 'Meanly Polluted',
+               'Slightly Polluted', 'Unpolluted'),
+      names_to = 'AMBICat', values_to = 'prop'
+    ) |>
+    dplyr::group_by(bay_segment, yr) |>
+    dplyr::slice_max(prop, n = 1, with_ties = FALSE) |>
+    dplyr::ungroup() |>
+    dplyr::select(-prop) |>
+    dplyr::mutate(outcome = ambi_cols[AMBICat])
+}
+
 # Leaflet map pre-loaded with the same basemap tiles mapview uses by default.
 # Avoids the overhead of initializing a full mapview object.
 base_leaflet <- function() {

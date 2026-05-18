@@ -189,6 +189,57 @@ pelsum <- anlz_sedimentpel(sedimentdata)
 
 save(pelsum, file = here('data/pelsum.RData'))
 
+# AMBI scores ----------------------------------------------------------------
+
+data(file = 'benthicdata', package = 'tbeptools')
+
+ambiscr <- tbeptools::anlz_ambiscr(benthicdata)
+save(ambiscr, file = here('data/ambiscr.RData'))
+
+ambiscr_tb <- tbeptools::anlz_ambiscr(benthicdata, type = 'AMBI-TB')
+save(ambiscr_tb, file = here('data/ambiscr_tb.RData'))
+
+# AMBI station points (like benpts) ------------------------------------------
+
+ambipts <- ambiscr %>%
+  filter(ProgramName == 'Benthic Monitoring') %>%
+  filter(AreaAbbr %in% c('HB', 'OTB', 'MTB', 'LTB', 'TCB', 'MR', 'BCB', 'MCB', 'PR')) %>%
+  mutate(
+    outcome  = ambi_cols[AMBICat],
+    AreaAbbr = case_when(AreaAbbr %in% c('MCB', 'PR') ~ 'HB', T ~ AreaAbbr)
+  ) %>%
+  sf::st_as_sf(coords = c('Longitude', 'Latitude'), crs = 4326)
+
+save(ambipts, file = here('data/ambipts.RData'))
+
+ambipts_tb <- ambiscr_tb %>%
+  filter(ProgramName == 'Benthic Monitoring') %>%
+  filter(AreaAbbr %in% c('HB', 'OTB', 'MTB', 'LTB', 'TCB', 'MR', 'BCB', 'MCB', 'PR')) %>%
+  rename(AMBICat = TBAMBICat, AMBI = TBAMBI) %>%
+  mutate(
+    outcome  = ambi_cols[AMBICat],
+    AreaAbbr = case_when(AreaAbbr %in% c('MCB', 'PR') ~ 'HB', T ~ AreaAbbr)
+  ) %>%
+  sf::st_as_sf(coords = c('Longitude', 'Latitude'), crs = 4326)
+
+save(ambipts_tb, file = here('data/ambipts_tb.RData'))
+
+# AMBI segment dominant category (like benmed) --------------------------------
+
+ambimed    <- tbeptools::anlz_ambimed(ambiscr)    %>% add_dominant_cat()
+ambimed_tb <- tbeptools::anlz_ambimed(ambiscr_tb) %>% add_dominant_cat()
+
+save(ambimed,    file = here('data/ambimed.RData'))
+save(ambimed_tb, file = here('data/ambimed_tb.RData'))
+
+# pre-computed AMBI matrices (like tbbimat) -----------------------------------
+
+ambimat    <- tbeptools::show_ambimatrix(ambiscr,    family = fml, txtsz = NULL)
+ambimat_tb <- tbeptools::show_ambimatrix(ambiscr_tb, family = fml, txtsz = NULL)
+
+save(ambimat,    file = here('data/ambimat.RData'))
+save(ambimat_tb, file = here('data/ambimat_tb.RData'))
+
 # default-state sediment plot and map (PEL summary, full year range) ----------
 # pre-computed so the dashboard doesn't process all of sedimentdata on startup
 
