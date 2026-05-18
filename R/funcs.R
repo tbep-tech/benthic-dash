@@ -1,6 +1,22 @@
 cols <- c('#CC3231', '#E9C318', '#2DC938')
 maxyr <- 2024
 
+# Leaflet map pre-loaded with the same basemap tiles mapview uses by default.
+# Avoids the overhead of initializing a full mapview object.
+base_leaflet <- function() {
+  leaflet::leaflet() %>%
+    leaflet::addProviderTiles("CartoDB.Positron",   group = "CartoDB.Positron") %>%
+    leaflet::addProviderTiles("CartoDB.DarkMatter", group = "CartoDB.DarkMatter") %>%
+    leaflet::addProviderTiles("OpenStreetMap",      group = "OpenStreetMap") %>%
+    leaflet::addProviderTiles("Esri.WorldImagery",  group = "Esri.WorldImagery") %>%
+    leaflet::addProviderTiles("OpenTopoMap",        group = "OpenTopoMap") %>%
+    leaflet::addLayersControl(
+      baseGroups = c("CartoDB.Positron", "CartoDB.DarkMatter", "OpenStreetMap",
+                     "Esri.WorldImagery", "OpenTopoMap"),
+      options = leaflet::layersControlOptions(collapsed = TRUE)
+    )
+}
+
 # Harmonize the Acronym column for special study site data (sedspedat, benspedat).
 # Also drops rows with no matching project record.
 fix_acronym <- function(dat) {

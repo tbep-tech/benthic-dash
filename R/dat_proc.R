@@ -189,3 +189,12 @@ pelsum <- anlz_sedimentpel(sedimentdata)
 
 save(pelsum, file = here('data/pelsum.RData'))
 
+# default-state sediment plot and map (PEL summary, full year range) ----------
+# pre-computed so the dashboard doesn't process all of sedimentdata on startup
+
+sedplo_default <- tbeptools::show_sedimentpelave(sedimentdata, yrrng = c(1993, maxyr), plotly = TRUE)
+save(sedplo_default, file = here('data/sedplo_default.RData'))
+
+sedmap_default <- tbeptools::show_sedimentpelmap(sedimentdata, yrrng = c(1993, maxyr))
+save(sedmap_default, file = here('data/sedmap_default.RData'))
+
