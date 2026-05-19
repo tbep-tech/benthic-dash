@@ -956,7 +956,7 @@ The __MATRIX RESULTS__ show the dominant AMBI-TB category per bay segment and ye
 Placing the cursor over the matrix will show the dominant category for each segment and year.
 
 ```{r, out.width='40%', fig.align='center'}
-knitr::include_graphics('www/ambimatrixex.PNG')
+knitr::include_graphics('www/ambimatrixex.png')
 ```
 <br>
 
@@ -965,7 +965,7 @@ In the above example, the dominant category for Hillsborough Bay in 1995 was <sp
 The __TREND PLOT__ shows mean annual AMBI scores by bay segment over time, with colored background zones corresponding to the five pollution categories.  Select one to all bay segments to show average AMBI scores for those segments.  Placing the cursor over the plot will show the mean AMBI score for the segment selection(s) and year.
 
 ```{r, out.width='30%', fig.align='center'}
-knitr::include_graphics('www/ambitrend.PNG')
+knitr::include_graphics('www/ambitrend.png')
 ```
 <br>
 
@@ -976,7 +976,7 @@ The __MAP SUMMARY__ on the right shows segment polygons shaded by dominant AMBI 
 Placing the cursor over the segment or station will reveal additional information.
 
 ```{r, out.width='50%', fig.align='center'}
-knitr::include_graphics('www/ambimapex.PNG')
+knitr::include_graphics('www/ambimapex.png')
 ```
 <br>
 
