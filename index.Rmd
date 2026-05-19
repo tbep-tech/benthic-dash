@@ -962,7 +962,7 @@ knitr::include_graphics('www/ambimatrixex.png')
 
 In the above example, the dominant category for Hillsborough Bay in 1995 was <span style="color:#8DBE68">__Slightly Polluted__</span>.
 
-The __TREND PLOT__ shows mean annual AMBI scores by bay segment over time, with colored background zones corresponding to the five pollution categories.  Select one to all bay segments to show average AMBI scores for those segments.  Placing the cursor over the plot will show the mean AMBI score for the segment selection(s) and year.
+The __TREND PLOT__ shows mean annual AMBI scores by bay segment over time, with colored background zones corresponding to the five pollution categories.  Select one to all bay segments to show average AMBI scores for those segments.  Placing the cursor over the plot will show the mean AMBI score for the segment selection(s) and year.  Note that the means or individual bay segments may differ slightly from the bay segment category shown in the matrix and map, which is based on the plurarity of station categories rather than the mean score.
 
 ```{r, out.width='30%', fig.align='center'}
 knitr::include_graphics('www/ambitrend.png')
