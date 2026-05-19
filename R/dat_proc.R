@@ -205,7 +205,13 @@ ambipts <- ambiscr %>%
   filter(ProgramName == 'Benthic Monitoring') %>%
   filter(AreaAbbr %in% c('HB', 'OTB', 'MTB', 'LTB', 'TCB', 'MR', 'BCB', 'MCB', 'PR')) %>%
   mutate(
-    outcome  = ambi_cols[AMBICat],
+    outcome = case_when(
+      AMBICat == 'Unpolluted'         ~ '#2DC938',
+      AMBICat == 'Slightly Polluted'  ~ '#8DBE68',
+      AMBICat == 'Meanly Polluted'    ~ '#E9C318',
+      AMBICat == 'Heavily Polluted'   ~ '#E07B39',
+      AMBICat == 'Extremely Polluted' ~ '#CC3231'
+    ),
     AreaAbbr = case_when(AreaAbbr %in% c('MCB', 'PR') ~ 'HB', T ~ AreaAbbr)
   ) %>%
   sf::st_as_sf(coords = c('Longitude', 'Latitude'), crs = 4326)
@@ -217,7 +223,13 @@ ambipts_tb <- ambiscr_tb %>%
   filter(AreaAbbr %in% c('HB', 'OTB', 'MTB', 'LTB', 'TCB', 'MR', 'BCB', 'MCB', 'PR')) %>%
   rename(AMBICat = TBAMBICat, AMBI = TBAMBI) %>%
   mutate(
-    outcome  = ambi_cols[AMBICat],
+    outcome = case_when(
+      AMBICat == 'Unpolluted'         ~ '#2DC938',
+      AMBICat == 'Slightly Polluted'  ~ '#8DBE68',
+      AMBICat == 'Meanly Polluted'    ~ '#E9C318',
+      AMBICat == 'Heavily Polluted'   ~ '#E07B39',
+      AMBICat == 'Extremely Polluted' ~ '#CC3231'
+    ),
     AreaAbbr = case_when(AreaAbbr %in% c('MCB', 'PR') ~ 'HB', T ~ AreaAbbr)
   ) %>%
   sf::st_as_sf(coords = c('Longitude', 'Latitude'), crs = 4326)

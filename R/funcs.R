@@ -22,7 +22,16 @@ add_dominant_cat <- function(ambimed_dat) {
     dplyr::slice_max(prop, n = 1, with_ties = FALSE) |>
     dplyr::ungroup() |>
     dplyr::select(-prop) |>
-    dplyr::mutate(outcome = ambi_cols[AMBICat])
+    dplyr::mutate(
+      bay_segment = as.character(bay_segment),
+      outcome = dplyr::case_when(
+        AMBICat == 'Unpolluted'         ~ '#2DC938',
+        AMBICat == 'Slightly Polluted'  ~ '#8DBE68',
+        AMBICat == 'Meanly Polluted'    ~ '#E9C318',
+        AMBICat == 'Heavily Polluted'   ~ '#E07B39',
+        AMBICat == 'Extremely Polluted' ~ '#CC3231'
+      )
+    )
 }
 
 # Leaflet map pre-loaded with the same basemap tiles mapview uses by default.

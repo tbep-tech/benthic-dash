@@ -29,13 +29,9 @@ load(file = 'data/spedat.RData')
 load(file = 'data/pelsum.RData')
 load(file = 'data/benspedat.RData')
 load(file = 'data/sedspedat.RData')
-load(file = 'data/ambiscr.RData')
 load(file = 'data/ambiscr_tb.RData')
-load(file = 'data/ambipts.RData')
 load(file = 'data/ambipts_tb.RData')
-load(file = 'data/ambimed.RData')
 load(file = 'data/ambimed_tb.RData')
-load(file = 'data/ambimat.RData')
 load(file = 'data/ambimat_tb.RData')
 load(file = 'data/sedplo_default.RData')
 load(file = 'data/sedmap_default.RData')
@@ -117,12 +113,10 @@ observe({
 ambimat_react <- reactive({
 
   yrsel_ambi <- input$yrsel_ambi
-  ambi_type  <- input$ambi_type
 
   lwid <- 1.5
-  base_mat <- if(ambi_type == 'AMBI-TB') ambimat_tb else ambimat
 
-  p <- base_mat +
+  p <- ambimat_tb +
     ggplot2::geom_hline(yintercept = yrsel_ambi - 0.5, lwd = lwid) +
     ggplot2::geom_hline(yintercept = yrsel_ambi + 0.5, lwd = lwid) +
     ggplot2::geom_segment(ggplot2::aes(x = 0.5, xend = 0.5, y = yrsel_ambi - 0.5, yend = yrsel_ambi + 0.5, lwd = lwid)) +
@@ -138,17 +132,13 @@ ambimap_proxy <- leaflet::leafletProxy('ambimap')
 observe({
 
   yrsel_ambi <- input$yrsel_ambi
-  ambi_type  <- input$ambi_type
   req(yrsel_ambi)
 
-  pts_dat <- if(ambi_type == 'AMBI-TB') ambipts_tb else ambipts
-  pol_dat <- if(ambi_type == 'AMBI-TB') ambimed_tb  else ambimed
-
-  ambipol <- pol_dat %>%
+  ambipol <- ambimed_tb %>%
     dplyr::filter(yr == yrsel_ambi) %>%
     dplyr::inner_join(segs, ., by = 'bay_segment')
 
-  ambipts_yr <- pts_dat %>%
+  ambipts_yr <- ambipts_tb %>%
     dplyr::filter(yr == yrsel_ambi) %>%
     dplyr::filter(FundingProject == 'TBEP')
 
@@ -182,10 +172,9 @@ observe({
 
 # AMBI summary table
 ambitab_react <- reactive({
-  yrsel_ambi <- input$yrsel_ambi
-  ambi_type  <- input$ambi_type
-  dat <- if(ambi_type == 'AMBI-TB') ambiscr_tb else ambiscr
-  tbeptools::show_ambitab(dat, yrrng = c(yrsel_ambi, yrsel_ambi))
+  yrrng_ambi <- input$yrrng_ambi
+  req(yrrng_ambi)
+  tbeptools::show_ambitab(ambiscr_tb, yrrng = yrrng_ambi)
 })
 
 # sediment plot
@@ -622,6 +611,16 @@ dldat <- reactive({
     'TBBI stations' = tbbiscr %>%
       dplyr::select(-ProgramID) %>%
       dplyr::filter(AreaAbbr %in% c("OTB", "HB", "MTB", "LTB", "TCB", "MR", "BCB")),
+    'AMBI bay segment' = {
+      props <- tbeptools::anlz_ambimed(ambiscr_tb)
+      dplyr::left_join(props,
+        dplyr::select(ambimed_tb, bay_segment, yr, AMBICat),
+        by = c('bay_segment', 'yr'))
+    },
+    'AMBI stations' = ambiscr_tb %>%
+      dplyr::rename(AMBI = TBAMBI, AMBICat = TBAMBICat) %>%
+      dplyr::filter(AreaAbbr %in% c("OTB", "HB", "MTB", "LTB", "TCB", "MR", "BCB")) %>%
+      dplyr::select(StationID, AreaAbbr, FundingProject, ProgramName, Latitude, Longitude, date, yr, AMBI, AMBICat),
     'PEL summary' = pelsum,
     {
       req(prmseldl)
@@ -704,9 +703,10 @@ knitr::include_graphics('www/bannerimage.png')
 This dashboard summarizes over twenty-five years of benthic data from Tampa Bay, Florida.  All data were collected by staff from the Environmental Protection Commission of Hillsborough County.  The data provide information on the organisms living in or near the bay bottom and contaminants of concern in the sediment.  The condition of the bay bottom is one of several indicators used by the Tampa Bay Estuary Program to assess overall health of the bay. The different pages under the __PAGE SELECTION__ menu can be used to view synthesized results from the benthic data:
 
 1) [__TAMPA BAY BENTHIC INDEX__](#tampa-bay-benthic-index): View annual summaries by major bay segments for the Tampa Bay Benthic Index (TBBI)
+1) [__AMBI__](#ambi): View annual summaries by major bay segments for the Tampa Bay AZTI Marine Biotic Index (AMBI)
 1) [__SEDIMENT CONTAMINANTS__](#sediment-contaminants): View summaries of sediment contaminant concentrations
 1) [__SPECIAL STUDY SITES__](#special-study-sites-1): View results for special study sites for the Tampa Bay Estuary Program, including benthic index and contaminant results
-1) [__DATA DOWNLOADS__](#data-downloads): Download TBBI scores or sediment contaminant data
+1) [__DATA DOWNLOADS__](#data-downloads): Download TBBI scores, AMBI-TB scores, or sediment contaminant data
 
 The plots in this dashboard are interactive and display options can be controlled using a mouse. Most plots include a [control menu](https://help.plot.ly/zoom-pan-hover-controls/){target="_blank"} on the top with different options for viewing the data.  For example, click the camera icon to download a plot.
 
@@ -755,6 +755,18 @@ Benthic data provide critical information on the health of organisms that live i
 #### Benthic index
 
 The TBBI provides an estimate of the health of benthic communities in Tampa Bay. The TBBI is scaled from 0-100 with values <73 classified as <span style="color:#CC3231">__Degraded__</span>, from 73-87 as <span style="color:#E9C318">__Intermediate__</span>, and >87 as <span style="color:#2DC938">__Healthy__</span>. These classifications are assigned to individual sampling stations in Tampa Bay. Collectively, bay segments are assigned to categories of <span style="color:#CC3231">__Poor__</span>, <span style="color:#E9C318">__Fair__</span>, and <span style="color:#2DC938">__Good__</span> based on the distribution of classifications across all stations in each segment. Bay segment results are based on a five-year rolling assessment starting from 2005 to account for reduced sampling effort. This information provides a general summary of benthic community health across the bay.  These results are shown on the [__TAMPA BAY BENTHIC INDEX__](#tampa-bay-benthic-index) tab. 
+
+#### AZTI Marine Biotic Index
+
+The AZTI Marine Biotic Index (AMBI) is a complementary index of benthic community health based on the ecological sensitivity of taxa to organic enrichment. Species are assigned to one of five ecological groups ranging from very sensitive to very tolerant of disturbance, and the AMBI score is computed as a weighted mean of those group abundances. AMBI scores range from 0 to 10, where lower values indicate better conditions, and individual stations are classified into five categories:
+
+* <span style="color:#2DC938">__Unpolluted__</span>: dominated by sensitive species
+* <span style="color:#8DBE68">__Slightly Polluted__</span>: sensitive species present with some tolerant taxa
+* <span style="color:#E9C318">__Meanly Polluted__</span>: indifferent and tolerant species increasing
+* <span style="color:#E07B39">__Heavily Polluted__</span>: second-order opportunists dominant
+* <span style="color:#CC3231">__Extremely Polluted__</span>: first-order opportunists dominant
+
+This dashboard uses a Tampa Bay variant of the AMBI, which applies ecological group assignments calibrated specifically for Tampa Bay species rather than the original Gulf of Mexico classification. These results are shown on the [__AMBI__](#ambi) tab.
 
 #### Contaminant data
 
@@ -869,7 +881,6 @@ benmapbs <- base_leaflet() %>%
   )
 output$benmap <- leaflet::renderLeaflet(benmapbs)
 
-tags$style(HTML(".js-irs-0 .irs-single-0, .js-irs-0 .irs-bar-edge-0, .js-irs-0 .irs-bar, .js-irs-0 .irs-line {background: #E5E5E5 !important; border: 1px #E5E5E5 !important;}"))
 fillCol(flex = c(NA, 1),
   column(12,
     column(6,
@@ -896,25 +907,33 @@ plotly::plotlyOutput('ambimat')
 ### TREND PLOT
 
 ```{r}
-output$ambitrend <- plotly::renderPlotly(
-  tbeptools::show_ambitrend(ambiscr, ambiscr_tb, plotly = TRUE)
-)
+selectInput('ambi_segs', 'Select bay segment(s):', multiple = TRUE,
+  choices = c('HB', 'OTB', 'MTB', 'LTB', 'TCB', 'MR', 'BCB'),
+  selected = c('HB', 'OTB', 'MTB', 'LTB', 'TCB', 'MR', 'BCB'),
+  width = '100%')
+ambitrend_react <- reactive({
+  segs <- input$ambi_segs
+  if (is.null(segs) || length(segs) == 0) segs <- c('HB', 'OTB', 'MTB', 'LTB', 'TCB', 'MR', 'BCB')
+  tbeptools::show_ambitrend(ambiscr_tb, bay_segment = segs, plotly = TRUE)
+})
+output$ambitrend <- plotly::renderPlotly(ambitrend_react())
 plotly::plotlyOutput('ambitrend')
 ```
 
 ### SUMMARY TABLE
 
 ```{r}
+sliderInput('yrrng_ambi', 'Select year range:', min = 1993, max = maxyr,
+  value = c(1993, maxyr), step = 1, sep = '', width = '100%')
 output$ambitab <- renderUI({
-  ft <- ambitab_react()
-  htmltools::HTML(flextable::htmltools_value(ft))
+  flextable::htmltools_value(ambitab_react())
 })
 uiOutput('ambitab')
 ```
 
 ### Using this tab
 
-This tab shows the AZTI Marine Biotic Index (AMBI) for benthic communities sampled across Tampa Bay. The AMBI is an index of ecological quality based on the sensitivity of taxa to pollution, ranging from 0 to 10 where higher values indicate healthier conditions. Individual station scores are assigned to one of five categories:
+This tab shows the AZTI Marine Biotic Index (AMBI) for benthic communities sampled across Tampa Bay. The AMBI is an index of ecological quality based on the sensitivity of benthic taxa to pollution, ranging from 0 to 10 where higher values indicate healthier conditions. Individual station scores are assigned to one of five categories:
 
 * <span style="color:#CC3231">__Extremely Polluted__</span>: AMBI score < 1.39
 * <span style="color:#E07B39">__Heavily Polluted__</span>: AMBI score 1.39 – 2.89
@@ -922,9 +941,9 @@ This tab shows the AZTI Marine Biotic Index (AMBI) for benthic communities sampl
 * <span style="color:#8DBE68">__Slightly Polluted__</span>: AMBI score 5.29 – 8.29
 * <span style="color:#2DC938">__Unpolluted__</span>: AMBI score > 8.29
 
-Two variants of the index are available. The __AMBI__ variant uses ecological group assignments from Gillett et al. (2015) developed for the Gulf of Mexico. The __AMBI-TB__ variant uses Tampa Bay-specific ecological group assignments calibrated for local conditions. The variant selector above the map controls which scores are shown in the __MATRIX RESULTS__, __SUMMARY TABLE__, and map. The __TREND PLOT__ always shows both variants together for comparison.
+This tab uses a Tampa Bay variant of the AMBI, which uses ecological group assignments calibrated for local conditions rather than the broader Gulf of Mexico classification.
 
-The __MATRIX RESULTS__ show the dominant AMBI category per bay segment and year, based on the distribution of station scores. Bay segment results use a five-year rolling assessment starting from 2005. The selected year is highlighted with a black rectangle. Bay segments shown are:
+The __MATRIX RESULTS__ show the dominant AMBI-TB category per bay segment and year, based on the distribution of station scores. Bay segment results use a five-year rolling assessment starting from 2005. The selected year is highlighted with a black rectangle. Bay segments shown are:
 
 * __OTB__: Old Tampa Bay
 * __HB__: Hillsborough Bay
@@ -934,9 +953,34 @@ The __MATRIX RESULTS__ show the dominant AMBI category per bay segment and year,
 * __MR__: Manatee River
 * __BCB__: Boca Ciega Bay
 
-The __TREND PLOT__ shows mean annual AMBI scores by bay segment over time, with colored background zones corresponding to the five pollution categories. The __SUMMARY TABLE__ shows the percentage of stations in each category per bay segment for the selected year.
+Placing the cursor over the matrix will show the dominant category for each segment and year.
 
-The __MAP SUMMARY__ on the right shows segment polygons shaded by dominant AMBI category and individual station scores as colored points for the selected year.
+```{r, out.width='40%', fig.align='center'}
+knitr::include_graphics('www/ambimatrixex.PNG')
+```
+<br>
+
+In the above example, the dominant category for Hillsborough Bay in 1995 was <span style="color:#8DBE68">__Slightly Polluted__</span>.
+
+The __TREND PLOT__ shows mean annual AMBI scores by bay segment over time, with colored background zones corresponding to the five pollution categories.  Select one to all bay segments to show average AMBI scores for those segments.  Placing the cursor over the plot will show the mean AMBI score for the segment selection(s) and year.
+
+```{r, out.width='30%', fig.align='center'}
+knitr::include_graphics('www/ambitrend.PNG')
+```
+<br>
+
+The __SUMMARY TABLE__ shows the percentage of stations in each category per bay segment for the selected year range, controlled by the slider above the table.
+
+The __MAP SUMMARY__ on the right shows segment polygons shaded by dominant AMBI category and individual station scores as colored points for the selected year.  Note that some stations may be shown as black points, meaning "azoic" or no organisms were found at these stations.
+
+Placing the cursor over the segment or station will reveal additional information.
+
+```{r, out.width='50%', fig.align='center'}
+knitr::include_graphics('www/ambimapex.PNG')
+```
+<br>
+
+The year slider on the top can be used to select which year is shown on the map. A reference box on the *MATRIX RESULTS* tab shows which year is selected. Selecting the play button will cycle through all years in the data, with the maps and plots updating with each year.
 
 Column {data-width=500}
 -----------------------------------------------------------------------
@@ -985,11 +1029,8 @@ output$ambimap <- leaflet::renderLeaflet(ambimapbs)
 
 fillCol(flex = c(NA, 1),
   column(12,
-    column(6,
-      sliderInput('yrsel_ambi', 'Select year:', min = 1993, max = maxyr, value = maxyr, step = 1, sep = '', width = '200%', animate = T)
-    ),
-    column(3,
-      selectInput('ambi_type', 'Select variant:', choices = c('AMBI-TB', 'AMBI'))
+    column(9,
+      sliderInput('yrsel_ambi', 'Select year:', min = 1993, max = maxyr, value = maxyr, step = 1, sep = '', width = '100%', animate = T)
     )
   ),
   leaflet::leafletOutput('ambimap')
@@ -1212,11 +1253,11 @@ output$dltabout <- reactable::renderReactable(dltab())
 fillCol(flex =c(NA, 1, NA),
   column(12,
     column(3, 
-      selectInput('typseldl', 'Select type:', choices = c('TBBI bay segment', 'TBBI stations', 'PEL summary', c(unique(prmlkup$SedResultsType))))
+      selectInput('typseldl', 'Select type:', choices = c('TBBI bay segment', 'TBBI stations', 'AMBI bay segment', 'AMBI stations', 'PEL summary', c(unique(prmlkup$SedResultsType))))
     ),
     column(3,
       param_selector_ui(input, 'typseldl', 'prmseldl', prmlkup,
-                        exclude = c('TBBI bay segment', 'TBBI stations', 'PEL summary'))
+                        exclude = c('TBBI bay segment', 'TBBI stations', 'AMBI bay segment', 'AMBI stations', 'PEL summary'))
     ),
     column(6,
       sliderInput('yrseldl', 'Select year range:', min = 1993, max = maxyr, value = c(1993, maxyr), step = 1, sep = '', width = '200%')
@@ -1268,6 +1309,37 @@ __TBBI stations__: Tampa Bay Benthic Index (TBBI) scores by sampling station
 * *yr*: Year of the sample
 * *TBBI*: Tampa Bay Benthic Index score
 * *TBBICat*: Tampa Bay Benthic Index category as degraded, intermediate, or healthy
+
+__AMBI bay segment__: AZTI Marine Biotic Index (AMBI-TB) proportion of stations in each pollution category and dominant category by bay segment
+
+* *bay_segment*: Abbreviated name for the bay segment
+     * *OTB*: Old Tampa Bay
+     * *HB*: Hillsborough Bay
+     * *MTB*: Middle Tampa Bay
+     * *LTB*: Lower Tampa Bay
+     * *TCB*: Terra Ceia Bay
+     * *MR*: Manatee River
+     * *BCB*: Boca Ciega Bay
+* *yr*: Year of the survey
+* *Extremely Polluted*: Proportion of stations in the segment categorized as Extremely Polluted
+* *Heavily Polluted*: Proportion of stations in the segment categorized as Heavily Polluted
+* *Meanly Polluted*: Proportion of stations in the segment categorized as Meanly Polluted
+* *Slightly Polluted*: Proportion of stations in the segment categorized as Slightly Polluted
+* *Unpolluted*: Proportion of stations in the segment categorized as Unpolluted
+* *AMBICat*: Dominant AMBI-TB pollution category for the segment
+
+__AMBI stations__: AZTI Marine Biotic Index (AMBI-TB) scores by sampling station
+
+* *StationID*: Unique station ID
+* *AreaAbbr*: Abbreviated name for the bay segment (same abbreviations as above)
+* *FundingProject*: Project name responsible for funding the sampling
+* *ProgramName*: Name of the monitoring program (Benthic Monitoring is routine)
+* *Latitude*: Latitude of the station in decimal degrees, EPSG 4326
+* *Longitude*: Longitude of the station in decimal degrees, EPSG 4326
+* *date*: Date of the sample
+* *yr*: Year of the sample
+* *AMBI*: AMBI-TB score (0 to 7, where lower values indicate less pollution)
+* *AMBICat*: AMBI-TB pollution category (Unpolluted, Slightly Polluted, Meanly Polluted, Heavily Polluted, or Extremely Polluted)
 
 __PEL summary__: PEL ratio summaries by sampling station
 

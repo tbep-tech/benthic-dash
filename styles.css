@@ -120,22 +120,46 @@ h6 {
   color: #958984;
 }
 
-/* shiny slider stuff */
+/* shiny slider stuff
+   ionRangeSlider inserts .irs BEFORE the input element (using .before()),
+   so the .irs span and the input are siblings in this order:
+     .irs  →  input#yrsel1  →  [optional animate container]
+   The CSS :has() pseudo-class lets us select a preceding sibling by looking
+   forward: .irs:has(~ input#yrsel1) matches the .irs that has input#yrsel1
+   as a subsequent sibling. Supported in Chrome 105+, Firefox 121+, Safari 15.4+.
+   The shiny skin applies color via background/border-color on .irs-bar and
+   background-color on .irs-from/.irs-to/.irs-single — no pseudo-element triangles. */
 
-.irs-bar {
-  background: #00806E
+/* single-year sliders (TBBI map, AMBI map): gray bar, green selected-year label */
+.irs:has(~ input#yrsel1) .irs-bar,
+.irs:has(~ input#yrsel_ambi) .irs-bar {
+  background: #E5E5E5 !important;
+  border-top-color: #E5E5E5 !important;
+  border-bottom-color: #E5E5E5 !important;
 }
-.irs-bar {
-  border-top: 1px #00806E
+.irs:has(~ input#yrsel1) .irs-single,
+.irs:has(~ input#yrsel_ambi) .irs-single {
+  background-color: #00806E !important;
 }
-.irs-bar-edge {
-  background: #00806E
+
+/* range sliders (sediment map, AMBI table, downloads): green bar and labels */
+.irs:has(~ input#yrsel2) .irs-bar,
+.irs:has(~ input#yrrng_ambi) .irs-bar,
+.irs:has(~ input#yrseldl) .irs-bar {
+  background: #00806E !important;
+  border-top-color: #00806E !important;
+  border-bottom-color: #00806E !important;
 }
-.irs-bar-edge {
-  border: 1px #00806E
-}
-.irs-single {
-  background: #00806E;
+.irs:has(~ input#yrsel2) .irs-from,
+.irs:has(~ input#yrsel2) .irs-to,
+.irs:has(~ input#yrsel2) .irs-single,
+.irs:has(~ input#yrrng_ambi) .irs-from,
+.irs:has(~ input#yrrng_ambi) .irs-to,
+.irs:has(~ input#yrrng_ambi) .irs-single,
+.irs:has(~ input#yrseldl) .irs-from,
+.irs:has(~ input#yrseldl) .irs-to,
+.irs:has(~ input#yrseldl) .irs-single {
+  background-color: #00806E !important;
 }
 
 /* tabset top border */
