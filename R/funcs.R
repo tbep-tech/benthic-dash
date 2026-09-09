@@ -38,13 +38,12 @@ add_dominant_cat <- function(ambimed_dat) {
 # Avoids the overhead of initializing a full mapview object.
 base_leaflet <- function() {
   leaflet::leaflet() %>%
-    leaflet::addProviderTiles("CartoDB.Positron",   group = "CartoDB.Positron") %>%
-    leaflet::addProviderTiles("CartoDB.DarkMatter", group = "CartoDB.DarkMatter") %>%
+    leaflet::addProviderTiles("Esri.WorldGrayCanvas",   group = "Esri.WorldGrayCanvas") %>%
     leaflet::addProviderTiles("OpenStreetMap",      group = "OpenStreetMap") %>%
     leaflet::addProviderTiles("Esri.WorldImagery",  group = "Esri.WorldImagery") %>%
     leaflet::addProviderTiles("OpenTopoMap",        group = "OpenTopoMap") %>%
     leaflet::addLayersControl(
-      baseGroups = c("CartoDB.Positron", "CartoDB.DarkMatter", "OpenStreetMap",
+      baseGroups = c("Esri.WorldGrayCanvas", "OpenStreetMap",
                      "Esri.WorldImagery", "OpenTopoMap"),
       options = leaflet::layersControlOptions(collapsed = TRUE)
     )
