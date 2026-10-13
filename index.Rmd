@@ -7,13 +7,14 @@ output:
     source_code: "https://github.com/tbep-tech/benthic-dash"
     includes:
       in_header: [google-analytics.html, loading_in_header.html]
-runtime: shiny
-css: styles.css
+runtime: shiny_prerendered
+css: www/styles.css
 ---
 
-```{r setup, include=F}
+```{r setup, include=F, context='setup'}
 knitr::opts_chunk$set(echo = F, message = F, warning = F)
 
+library(shiny)
 library(dplyr)
 
 source('R/funcs.R')
@@ -37,9 +38,82 @@ load(file = 'data/sedplo_default.RData')
 load(file = 'data/sedmap_default.RData')
 
 benptsyr <- benpts %>% dplyr::filter(yr == maxyr)
+
+bbx <- sf::st_bbox(segs) %>%
+  as.numeric()
+
+benmedyr <- benmed %>%
+  dplyr::filter(yr == maxyr) %>%
+  dplyr::inner_join(segs, ., by = 'bay_segment')
+
+# TBBI base map
+benmapbs <- base_leaflet() %>%
+  leaflet::fitBounds(lng1 = bbx[1], lng2 = bbx[3], lat1 = bbx[2], lat2 = bbx[4]) %>%
+  leaflet::addLegend("topright", labels = c("Good", "Fair", "Poor"), colors = rev(cols), title = "TBBI Category", opacity = 1) %>%
+  leaflet::addPolygons(
+    data = benmedyr,
+    stroke = T,
+    color = 'grey',
+    weight = 1,
+    layerId = ~bay_segment,
+    fillColor = ~outcome,
+    fillOpacity = 0.3,
+    label = ~paste0(bay_segment, ': ', long_name, ', TBBI: ', TBBICat)
+  ) %>%
+  leaflet::addCircleMarkers(
+    data = benptsyr,
+    layerId = ~StationID,
+    stroke = TRUE,
+    color = 'black',
+    fill = TRUE,
+    fillColor = ~outcome,
+    weight = 1,
+    fillOpacity = 1,
+    radius= 4,
+    label = ~paste0('StationNumber ', StationNumber, ', TBBI: ', round(TBBI, 1), ', Category: ', TBBICat)
+  )
+
+# AMBI base map
+ambimapbs_pol <- ambimed_tb %>%
+  dplyr::filter(yr == maxyr) %>%
+  dplyr::inner_join(segs, ., by = 'bay_segment')
+
+ambimapbs_pts <- ambipts_tb %>%
+  dplyr::filter(yr == maxyr) %>%
+  dplyr::filter(FundingProject == 'TBEP')
+
+ambimapbs <- base_leaflet() %>%
+  leaflet::fitBounds(lng1 = bbx[1], lng2 = bbx[3], lat1 = bbx[2], lat2 = bbx[4]) %>%
+  leaflet::addLegend("topright",
+    labels = names(ambi_cols),
+    colors = unname(ambi_cols),
+    title = "AMBI Category", opacity = 1
+  ) %>%
+  leaflet::addPolygons(
+    data = ambimapbs_pol,
+    stroke = T,
+    color = 'grey',
+    weight = 1,
+    layerId = ~bay_segment,
+    fillColor = ~outcome,
+    fillOpacity = 0.3,
+    label = ~paste0(bay_segment, ': ', long_name, ', AMBI: ', AMBICat)
+  ) %>%
+  leaflet::addCircleMarkers(
+    data = ambimapbs_pts,
+    layerId = ~StationID,
+    stroke = TRUE,
+    color = 'black',
+    fill = TRUE,
+    fillColor = ~outcome,
+    weight = 1,
+    fillOpacity = 1,
+    radius = 4,
+    label = ~paste0('StationNumber ', StationNumber, ', AMBI: ', round(AMBI, 1), ', Category: ', AMBICat)
+  )
 ```
 
-```{r reactives}
+```{r reactives, context='server'}
 # benthic matrix
 benmat <- reactive({
   
@@ -168,6 +242,13 @@ observe({
       label = ~paste0('StationNumber ', StationNumber, ', AMBI: ', round(AMBI, 1), ', Category: ', AMBICat)
     )
 
+})
+
+# AMBI trend plot
+ambitrend_react <- reactive({
+  segs <- input$ambi_segs
+  if (is.null(segs) || length(segs) == 0) segs <- c('HB', 'OTB', 'MTB', 'LTB', 'TCB', 'MR', 'BCB')
+  tbeptools::show_ambitrend(ambiscr_tb, bay_segment = segs, plotly = TRUE)
 })
 
 # AMBI summary table
@@ -667,7 +748,32 @@ dltab <- reactive({
 })
 ```
 
-```{r downloadhandlers}
+```{r outputs, context='server'}
+output$benmat <- plotly::renderPlotly(benmat())
+output$benmap <- leaflet::renderLeaflet(benmapbs)
+output$ambimat <- plotly::renderPlotly(ambimat_react())
+output$ambitrend <- plotly::renderPlotly(ambitrend_react())
+output$ambitab <- renderUI({
+  flextable::htmltools_value(ambitab_react())
+})
+output$ambimap <- leaflet::renderLeaflet(ambimapbs)
+output$sedplo <- plotly::renderPlotly(sedplo())
+output$alplo <- plotly::renderPlotly(alplo())
+output$prmsel_ui <- param_selector_ui(input, 'typsel', 'prmsel', prmlkup)
+output$sedmap <- leaflet::renderLeaflet(sedmap())
+output$spedattab <- reactable::renderReactable(spedattab())
+output$sedspeplo <- plotly::renderPlotly(sedspeplo())
+output$spealplo <- plotly::renderPlotly(spealplo())
+output$prmsel2_ui <- param_selector_ui(input, 'typsel2', 'prmsel2', prmlkup)
+output$spedattxt <- renderText(spedattxt())
+output$sedspemap <- leaflet::renderLeaflet(sedspemap())
+output$benspemap <- leaflet::renderLeaflet(benspemap())
+output$prmseldl_ui <- param_selector_ui(input, 'typseldl', 'prmseldl', prmlkup,
+                                        exclude = c('TBBI bay segment', 'TBBI stations', 'AMBI bay segment', 'AMBI stations', 'PEL summary'))
+output$dltabout <- reactable::renderReactable(dltab())
+```
+
+```{r downloadhandlers, context='server'}
 # download transect table
 output$dwnld <- downloadHandler(
   filename = function(){'benthicdata.csv'},
@@ -796,7 +902,6 @@ Column {.tabset .tabset-fade data-width=275}
 ### MATRIX RESULTS
 
 ```{r}
-output$benmat <- plotly::renderPlotly(benmat())
 plotly::plotlyOutput('benmat')
 ```
 
@@ -844,43 +949,6 @@ Column {data-width=500}
 ### MAP SUMMARY
 
 ```{r}
-bbx <- sf::st_bbox(segs) %>%
-  as.numeric()
-
-tbbiscryr <- tbbiscr %>%
-  dplyr::filter(yr == maxyr)
-benmedyr <- benmed %>%
-  dplyr::filter(yr == maxyr) %>%
-  dplyr::inner_join(segs, ., by = 'bay_segment')
-
-# benmapbs
-benmapbs <- base_leaflet() %>%
-  leaflet::fitBounds(lng1 = bbx[1], lng2 = bbx[3], lat1 = bbx[2], lat2 = bbx[4]) %>%
-  leaflet::addLegend("topright", labels = c("Good", "Fair", "Poor"), colors = rev(cols), title = "TBBI Category", opacity = 1) %>%
-  leaflet::addPolygons(
-    data = benmedyr,
-    stroke = T,
-    color = 'grey',
-    weight = 1,
-    layerId = ~bay_segment,
-    fillColor = ~outcome,
-    fillOpacity = 0.3,
-    label = ~paste0(bay_segment, ': ', long_name, ', TBBI: ', TBBICat)
-  ) %>%
-  leaflet::addCircleMarkers(
-    data = benptsyr,
-    layerId = ~StationID,
-    stroke = TRUE,
-    color = 'black',
-    fill = TRUE,
-    fillColor = ~outcome,
-    weight = 1,
-    fillOpacity = 1,
-    radius= 4,
-    label = ~paste0('StationNumber ', StationNumber, ', TBBI: ', round(TBBI, 1), ', Category: ', TBBICat)
-  )
-output$benmap <- leaflet::renderLeaflet(benmapbs)
-
 fillCol(flex = c(NA, 1),
   column(12,
     column(6,
@@ -900,7 +968,6 @@ Column {.tabset .tabset-fade data-width=275}
 ### MATRIX RESULTS
 
 ```{r}
-output$ambimat <- plotly::renderPlotly(ambimat_react())
 plotly::plotlyOutput('ambimat')
 ```
 
@@ -911,12 +978,6 @@ selectInput('ambi_segs', 'Select bay segment(s):', multiple = TRUE,
   choices = c('HB', 'OTB', 'MTB', 'LTB', 'TCB', 'MR', 'BCB'),
   selected = c('HB', 'OTB', 'MTB', 'LTB', 'TCB', 'MR', 'BCB'),
   width = '100%')
-ambitrend_react <- reactive({
-  segs <- input$ambi_segs
-  if (is.null(segs) || length(segs) == 0) segs <- c('HB', 'OTB', 'MTB', 'LTB', 'TCB', 'MR', 'BCB')
-  tbeptools::show_ambitrend(ambiscr_tb, bay_segment = segs, plotly = TRUE)
-})
-output$ambitrend <- plotly::renderPlotly(ambitrend_react())
 plotly::plotlyOutput('ambitrend')
 ```
 
@@ -925,9 +986,6 @@ plotly::plotlyOutput('ambitrend')
 ```{r}
 sliderInput('yrrng_ambi', 'Select year range:', min = 1993, max = maxyr,
   value = c(1993, maxyr), step = 1, sep = '', width = '100%')
-output$ambitab <- renderUI({
-  flextable::htmltools_value(ambitab_react())
-})
 uiOutput('ambitab')
 ```
 
@@ -988,45 +1046,6 @@ Column {data-width=500}
 ### MAP SUMMARY
 
 ```{r}
-ambimapbs_pol <- ambimed_tb %>%
-  dplyr::filter(yr == maxyr) %>%
-  dplyr::inner_join(segs, ., by = 'bay_segment')
-
-ambimapbs_pts <- ambipts_tb %>%
-  dplyr::filter(yr == maxyr) %>%
-  dplyr::filter(FundingProject == 'TBEP')
-
-ambimapbs <- base_leaflet() %>%
-  leaflet::fitBounds(lng1 = bbx[1], lng2 = bbx[3], lat1 = bbx[2], lat2 = bbx[4]) %>%
-  leaflet::addLegend("topright",
-    labels = names(ambi_cols),
-    colors = unname(ambi_cols),
-    title = "AMBI Category", opacity = 1
-  ) %>%
-  leaflet::addPolygons(
-    data = ambimapbs_pol,
-    stroke = T,
-    color = 'grey',
-    weight = 1,
-    layerId = ~bay_segment,
-    fillColor = ~outcome,
-    fillOpacity = 0.3,
-    label = ~paste0(bay_segment, ': ', long_name, ', AMBI: ', AMBICat)
-  ) %>%
-  leaflet::addCircleMarkers(
-    data = ambimapbs_pts,
-    layerId = ~StationID,
-    stroke = TRUE,
-    color = 'black',
-    fill = TRUE,
-    fillColor = ~outcome,
-    weight = 1,
-    fillOpacity = 1,
-    radius = 4,
-    label = ~paste0('StationNumber ', StationNumber, ', AMBI: ', round(AMBI, 1), ', Category: ', AMBICat)
-  )
-output$ambimap <- leaflet::renderLeaflet(ambimapbs)
-
 fillCol(flex = c(NA, 1),
   column(12,
     column(9,
@@ -1046,14 +1065,12 @@ Column {.tabset .tabset-fade data-width=275}
 ### SEDIMENT SUMMARY RESULTS
 
 ```{r}
-output$sedplo <- plotly::renderPlotly(sedplo())
 plotly::plotlyOutput('sedplo')
 ```
 
 ### METAL:ALUMINUM RATIO
 
 ```{r}
-output$alplo <- plotly::renderPlotly(alplo())
 plotly::plotlyOutput('alplo')
 ```
 
@@ -1112,14 +1129,13 @@ Column {data-width=500}
 ### MAP SUMMARY
 
 ```{r}
-output$sedmap <- leaflet::renderLeaflet(sedmap())
 fillCol(flex = c(NA, 1),
   column(12,
     column(3, 
       selectInput('typsel', 'Select type:', choices = c('PEL summary', c(unique(prmlkup$SedResultsType))))
     ),
     column(3,
-      param_selector_ui(input, 'typsel', 'prmsel', prmlkup)
+      uiOutput('prmsel_ui')
     ),
     column(6,
       sliderInput('yrsel2', 'Select year range:', min = 1993, max = maxyr, value = c(1993, maxyr), step = 1, sep = '', width = '200%'),
@@ -1138,21 +1154,18 @@ Column {.tabset .tabset-fade data-width=275}
 ### SPECIAL STUDY SITES
 
 ```{r}
-output$spedattab <- reactable::renderReactable(spedattab())
 reactable::reactableOutput('spedattab')
 ```
 
 ### SEDIMENT SUMMARY RESULTS
 
 ```{r}
-output$sedspeplo <- plotly::renderPlotly(sedspeplo())
 plotly::plotlyOutput('sedspeplo')
 ```
 
 ### METAL:ALUMINUM RATIO
 
 ```{r}
-output$spealplo <- plotly::renderPlotly(spealplo())
 plotly::plotlyOutput('spealplo')
 ```
 
@@ -1215,16 +1228,13 @@ Column {data-width=500}
 ### MAP SUMMARIES
 
 ```{r}
-output$spedattxt <- renderText(spedattxt())
-output$sedspemap <- leaflet::renderLeaflet(sedspemap())
-output$benspemap <- leaflet::renderLeaflet(benspemap())
 fillCol(flex = c(NA, 1),
   column(12,
     column(3, 
       selectInput('typsel2', 'Select type:', choices = c('PEL summary', c(unique(prmlkup$SedResultsType))))
     ),
     column(3,
-      param_selector_ui(input, 'typsel2', 'prmsel2', prmlkup)
+      uiOutput('prmsel2_ui')
     ),
     column(3,
       textOutput('spedattxt')
@@ -1249,15 +1259,13 @@ Column {.tabset .tabset-fade data-width=650}
 ### DOWNLOAD
 
 ```{r}
-output$dltabout <- reactable::renderReactable(dltab())
 fillCol(flex =c(NA, 1, NA),
   column(12,
     column(3, 
       selectInput('typseldl', 'Select type:', choices = c('TBBI bay segment', 'TBBI stations', 'AMBI bay segment', 'AMBI stations', 'PEL summary', c(unique(prmlkup$SedResultsType))))
     ),
     column(3,
-      param_selector_ui(input, 'typseldl', 'prmseldl', prmlkup,
-                        exclude = c('TBBI bay segment', 'TBBI stations', 'AMBI bay segment', 'AMBI stations', 'PEL summary'))
+      uiOutput('prmseldl_ui')
     ),
     column(6,
       sliderInput('yrseldl', 'Select year range:', min = 1993, max = maxyr, value = c(1993, maxyr), step = 1, sep = '', width = '200%')
